@@ -4,7 +4,8 @@ Carter Gaulke, Shri Shivram, Mitch Turley
 
 This project will take an input file that represents a level from Lazor.
 Lazor is a mobile puzzle game where the goal is to use blocks to redirect
-the lazor to the targets.
+the lazor to hit the targets. This project therefore solves the puzzle and
+outputs what the solution would be for each specific level.
 '''
 
 def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
@@ -62,7 +63,7 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
             lazor_direction.append(new_direction)
         if starting_grid[current_position[0]][current_position[1]] == 11:
             lazor_grid[current_position[0]][current_position[1]] = 1
-            new_direction = mirror_direction(current_direction, 2)
+            new_direction = mirror_direction(current_direction, 0)
             next_position = (current_position[0]+new_direction[0],
                              current_position[1]+new_direction[1])
             lazor_path.append(next_position)
@@ -81,9 +82,9 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
     targets_results = []
     for i, target in enumerate(targets):
         if lazor_grid[target[0]][target[1]] == 1:
-            targets_results[i] = True
+            targets_results.append(True)
         else:
-            targets_results[i] = False
+            targets_results.append(False)
     return lazor_grid, targets_results
 
 def mirror_direction(direction, side_of_block):
@@ -96,10 +97,8 @@ def mirror_direction(direction, side_of_block):
             A tuple to hold the two vectors for the direction of the lazor
         side of block: *int*
             An integer denoting the side of the block
-                0 = top
-                1 = right
-                2 = bottom
-                3 = left
+                0 = top/bottom
+                1 = left/right
 
     **Returns**
         new_direction: *tuple*

@@ -8,60 +8,66 @@ the lazor to hit the targets. This project therefore solves the puzzle and
 outputs what the solution would be for each specific level.
 '''
 
+
 class Block:
     '''
     This class 
     '''
-    
+
     # Initialize the Block class.
-    def __init__(self, position, type = 'empty'):
+    def __init__(self, position, type='empty'):
         self.type = type
         self.position = position
         self.grid = [
             [0 for i in range(3)]
             for j in range(3)
         ]
-    
+        self.positions = []
+
     def get_type(self):
         return self.type
 
-    def get_position(self):
-        return self.position
+    def get_positions(self):
+        return self.positions
 
     def set_position(self, new_position):
-        self.position = new_position
+        self.positions.append(new_position)
 
-    def mirror_direction(direction, side_of_block):
-    '''
-    This function takes the direction of the lazor and flips it depending
-    on which side of the block it hits
+    def remove_position(self, old_position):
+        self.positions.remove(old_position)
 
-    **Parameters**
-        direction: *tuple*
-            A tuple to hold the two vectors for the direction of the lazor
-        side of block: *int*
-            An integer denoting the side of the block
-                0 = top/bottom
-                1 = left/right
+    def mirror_direction(lazor_direction, side_of_block):
+        '''
+        This function takes the direction of the lazor and flips it depending
+        on which side of the block it hits
 
-    **Returns**
-        new_direction: *tuple*
-            A tuple for the new direction of the lazor
-    '''
-    if side_of_block == 0 or side_of_block == 2:
-        new_direction = (direction[0], direction[1] * -1)
-    if side_of_block == 1 or side_of_block == 3:
-        new_direction = (direction[0] * -1, direction[1])
-    return new_direction
+        **Parameters**
+            direction: *tuple*
+                A tuple to hold the two vectors for the direction of the lazor
+            side of block: *int*
+                An integer denoting the side of the block
+                    0 = top/bottom
+                    1 = left/right
+
+        **Returns**
+            new_direction: *tuple*
+                A tuple for the new direction of the lazor
+        '''
+        if side_of_block == 0 or side_of_block == 2:
+            new_direction = (lazor_direction[0], lazor_direction[1] * -1)
+        if side_of_block == 1 or side_of_block == 3:
+            new_direction = (lazor_direction[0] * -1, lazor_direction[1])
+        return new_direction
 
     def lazor(self, lazor_position, lazor_direction):
         new_direction = (lazor_direction[0], lazor_direction[1])
-        new_position = (lazor_position[0] + new_direction[0], 
+        new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
         return new_position, new_direction
-        
+
+
 class Empty_Block(Block):
-    def __init__(self, position, type = 'reflect'):
+    def __init__(self, position, type='reflect'):
         self.type = type
         self.position = position
         reflect_grid = [
@@ -71,8 +77,9 @@ class Empty_Block(Block):
         reflect_grid[1][1] = 100
         self.grid = reflect_grid
 
+
 class Reflect_Block(Block):
-    def __init__(self, position, type = 'reflect'):
+    def __init__(self, position, type='reflect'):
         self.type = type
         self.position = position
         reflect_grid = [
@@ -93,12 +100,13 @@ class Reflect_Block(Block):
         if starting_grid[lazor_position[0]][lazor_position[1]] == 11:
             lazor_grid[lazor_position[0]][lazor_position[1]] = 1
             new_direction = mirror_direction(lazor_direction, 0)
-        new_position = (lazor_position[0] + new_direction[0], 
+        new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
         return new_position, new_direction
-    
-class Refract_Block(Block):
-    def __init__(self, position, type = 'refract'):
+
+
+class Opaque_Block(Block):
+    def __init__(self, position, type='opaque'):
         self.type = type
         self.position = position
         reflect_grid = [
@@ -112,24 +120,14 @@ class Refract_Block(Block):
         reflect_grid[1][1] = 2
         self.grid = reflect_grid
 
-    def lazor(self, starting_grid, lazor_grid, lazor_position, lazor_direction):
-        new_direction_empty = (lazor_direction[0], lazor_direction[1])
-        new_position_empty = (lazor_position[0] + new_direction[0], 
-                              lazor_position[1] + new_direction[1])
-        
-        if starting_grid[lazor_position[0]][lazor_position[1]] == 20:
-            lazor_grid[lazor_position[0]][lazor_position[1]] = 1
-            new_direction_reflect = mirror_direction(lazor_direction, 1)
-        if starting_grid[lazor_position[0]][lazor_position[1]] == 21:
-            lazor_grid[lazor_position[0]][lazor_position[1]] = 1
-            new_direction_reflect = mirror_direction(lazor_direction, 0)
-        new_position_reflect = (lazor_position[0] + new_direction_reflect[0], 
-                                lazor_position[1] + new_direction_reflect[1])
-        
-        return [new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect]
-    
-class Absorb_Block(Block):
-    def __init__(self, position, type = 'absorb'):
+    def lazor(self, lazor_position, lazor_direction):
+        new_direction = (0, 0)
+        new_position = lazor_position
+        return new_position, new_direction
+
+
+class Refract_Block(Block):
+    def __init__(self, position, type='refract'):
         self.type = type
         self.position = position
         reflect_grid = [
@@ -143,11 +141,22 @@ class Absorb_Block(Block):
         reflect_grid[1][1] = 3
         self.grid = reflect_grid
 
-    def lazor(self, lazor_position, lazor_direction):
-        new_direction = (0,0)
-        new_position = lazor_position
-        return new_position, new_direction
-    
+    def lazor(self, starting_grid, lazor_grid, lazor_position, lazor_direction):
+        new_direction_empty = (lazor_direction[0], lazor_direction[1])
+        new_position_empty = (lazor_position[0] + new_direction[0],
+                              lazor_position[1] + new_direction[1])
+
+        if starting_grid[lazor_position[0]][lazor_position[1]] == 20:
+            lazor_grid[lazor_position[0]][lazor_position[1]] = 1
+            new_direction_reflect = mirror_direction(lazor_direction, 1)
+        if starting_grid[lazor_position[0]][lazor_position[1]] == 21:
+            lazor_grid[lazor_position[0]][lazor_position[1]] = 1
+            new_direction_reflect = mirror_direction(lazor_direction, 0)
+        new_position_reflect = (lazor_position[0] + new_direction_reflect[0],
+                                lazor_position[1] + new_direction_reflect[1])
+
+        return [new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect]
+
 
 def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
     '''
@@ -185,7 +194,7 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
     while len(lazor_path) > 0:
         current_position = lazor_path.pop()
         current_direction = lazor_direction.pop()
-        if not pos_chk(current_position[0],current_position[1], size):
+        if not pos_chk(current_position[0], current_position[1], size):
             continue
         ## Nothing is there
         if starting_grid[current_position[0]][current_position[1]] == 0:
@@ -194,7 +203,7 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
                              current_position[1]+current_direction[1])
             lazor_path.append(next_position)
             lazor_direction.append(current_direction)
-        ## Reflect Block
+        # Reflect Block
         if starting_grid[current_position[0]][current_position[1]] == 10:
             lazor_grid[current_position[0]][current_position[1]] = 1
             new_direction = mirror_direction(current_direction, 1)
@@ -209,12 +218,12 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
                              current_position[1]+new_direction[1])
             lazor_path.append(next_position)
             lazor_direction.append(new_direction)
-        ## Opaque Block
+        # Opaque Block
         if starting_grid[current_position[0]][current_position[1]] == 20:
             lazor_grid[current_position[0]][current_position[1]] = 1
         if starting_grid[current_position[0]][current_position[1]] == 21:
             lazor_grid[current_position[0]][current_position[1]] = 1
-        ## Refract Block
+        # Refract Block
         if starting_grid[current_position[0]][current_position[1]] == 30:
             pass
         if starting_grid[current_position[0]][current_position[1]] == 31:
@@ -227,6 +236,7 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
         else:
             targets_results.append(False)
     return lazor_grid, targets_results
+
 
 def mirror_direction(direction, side_of_block):
     '''
@@ -251,6 +261,7 @@ def mirror_direction(direction, side_of_block):
         new_direction = (direction[0] * -1, direction[1])
     return new_direction
 
+
 def pos_chk(x_position, y_position, size):
     '''
     Validate if the coordinates specified (x and y) are within the grid.
@@ -271,6 +282,7 @@ def pos_chk(x_position, y_position, size):
             Whether the coordiantes are valid (True) or not (False).
     '''
     return x_position >= 0 and x_position < size and y_position >= 0 and y_position < size
+
 
 if __name__ == '__main__':
     # Reflect block = 1
@@ -302,9 +314,9 @@ if __name__ == '__main__':
 
     # print(test_grid)
 
-    test_start = (1,6)
-    test_direction = (1,-1)
-    test_targets = [(2,3),(1,4)]
+    test_start = (1, 6)
+    test_direction = (1, -1)
+    test_targets = [(2, 3), (1, 4)]
 
     print(test_targets)
     lazor_grid_results, test_targets_results = lazor(test_grid, test_start,

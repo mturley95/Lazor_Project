@@ -7,6 +7,8 @@ Lazor is a mobile puzzle game where the goal is to use blocks to redirect
 the lazor to hit the targets. This project therefore solves the puzzle and
 outputs what the solution would be for each specific level.
 """
+
+
 def openlazorfile(filename):
     '''
     This will open the bff file and output the components on the board.
@@ -69,18 +71,19 @@ def openlazorfile(filename):
     lazor_coor = [int(laz_data[0][0]), int(laz_data[0][1])]
     lazor_dir = [int(laz_data[0][2]), int(laz_data[0][3])]
     target = [[int(element)for element in inner_list]
-                for inner_list in target]
+              for inner_list in target]
     print(grid_list)
-    print(grid_list[0][0])
-    print(type(grid_list[0][0]))
-    print(refl_block)
-    print(opq_block)
-    print(refr_block)
-    print(lazor_coor)
-    print(lazor_dir)
+    # print(grid_list[0][0])
+    # print(type(grid_list[0][0]))
+    # print(refl_block)
+    # print(opq_block)
+    # print(refr_block)
+    # print(lazor_coor)
+    # print(lazor_dir)
     # print(type(laz_start[0][0]))
-    print(target)
-    return None
+    # print(target)
+    return grid_list, refl_block
+
 
 class Block:
     '''
@@ -103,8 +106,12 @@ class Block:
     def get_positions(self):
         return self.positions
 
-    def set_position(self, new_position):
+    def set_position(self, new_position, num_grid):
         self.positions.append(new_position)
+        grid_edit = self.grid
+        for row in grid_edit:
+            for col in grid_edit:
+                num_grid[new_position[0]+row][new_position[1]+col]
 
     def remove_position(self, old_position):
         self.positions.remove(old_position)
@@ -138,8 +145,12 @@ class Block:
                         lazor_position[1] + new_direction[1])
         return new_position, new_direction
 
-class Empty_Block(Block):
-    def __init__(self, position, type='reflect'):
+
+class Open_Block(Block):
+
+    empty_count = 0
+
+    def __init__(self, position, type='open'):
         self.type = type
         self.position = position
         reflect_grid = [
@@ -149,7 +160,11 @@ class Empty_Block(Block):
         reflect_grid[1][1] = 100
         self.grid = reflect_grid
 
+
 class Reflect_Block(Block):
+
+    reflect_count = 0
+
     def __init__(self, position, type='reflect'):
         self.type = type
         self.position = position
@@ -175,7 +190,11 @@ class Reflect_Block(Block):
                         lazor_position[1] + new_direction[1])
         return new_position, new_direction
 
+
 class Opaque_Block(Block):
+
+    opaque_count = 0
+
     def __init__(self, position, type='opaque'):
         self.type = type
         self.position = position
@@ -195,6 +214,7 @@ class Opaque_Block(Block):
         new_position = lazor_position
         return new_position, new_direction
 
+
 class Refract_Block(Block):
     def __init__(self, position, type='refract'):
         self.type = type
@@ -213,7 +233,7 @@ class Refract_Block(Block):
     def lazor(self, starting_grid, lazor_grid, lazor_position, lazor_direction):
         new_direction_empty = (lazor_direction[0], lazor_direction[1])
         new_position_empty = (lazor_position[0] + new_direction[0],
-                                lazor_position[1] + new_direction[1])
+                              lazor_position[1] + new_direction[1])
 
         if starting_grid[lazor_position[0]][lazor_position[1]] == 20:
             lazor_grid[lazor_position[0]][lazor_position[1]] = 1
@@ -225,6 +245,66 @@ class Refract_Block(Block):
                                 lazor_position[1] + new_direction_reflect[1])
 
         return [new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect]
+
+
+def create_grid(grid_list):
+    x_count = 1
+    y_count = 1
+    new_grid = []
+
+    # Start with a grid of open blocks.
+    for line in grid_list:
+        for block in grid_list:
+            block = Block((x_count, y_count))
+            new_grid.append(block.grid)
+            print(new_grid)
+            x_count += 2
+        y_count += 2
+
+    x_count = 1
+    y_count = 1
+
+    # Then, add the empty and open blocks
+    for line in grid_list:
+        for block in grid_list:
+            if block == 'o':
+                empty_block = Open_Block((x_count, y_count))
+                new_grid.append(empty_block.grid)
+            if block == 'x':
+                block = Block((x_count, y_count))
+                new_grid.append(block.grid)
+            x_count += 2
+        y_count += 2
+
+    x_count = 1
+    y_count = 1
+
+    # Then, add the refract blocks
+    for line in grid_list:
+        for block in grid_list:
+            if block == 'C':
+                refract_block = Refract_Block((x_count, y_count))
+                new_grid.append(refract_block.grid)
+            x_count += 2
+        y_count += 2
+
+    x_count = 1
+    y_count = 1
+
+    # Then, add the reflect and opaque blocks
+    for line in grid_list:
+        for block in grid_list:
+            if block == 'A':
+                reflect_block = Reflect_Block((x_count, y_count))
+                new_grid.append(reflect_block.grid)
+            if block == 'B':
+                opaque_block = Opaque_Block((x_count, y_count))
+                new_grid.append(opaque_block.grid)
+            x_count += 2
+        y_count += 2
+
+    return new_grid
+
 
 def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
     '''
@@ -268,7 +348,7 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
         if starting_grid[current_position[0]][current_position[1]] == 0:
             lazor_grid[current_position[0]][current_position[1]] = 1
             next_position = (current_position[0]+current_direction[0],
-                                current_position[1]+current_direction[1])
+                             current_position[1]+current_direction[1])
             lazor_path.append(next_position)
             lazor_direction.append(current_direction)
         # Reflect Block
@@ -276,14 +356,14 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
             lazor_grid[current_position[0]][current_position[1]] = 1
             new_direction = mirror_direction(current_direction, 1)
             next_position = (current_position[0]+new_direction[0],
-                                current_position[1]+new_direction[1])
+                             current_position[1]+new_direction[1])
             lazor_path.append(next_position)
             lazor_direction.append(new_direction)
         if starting_grid[current_position[0]][current_position[1]] == 11:
             lazor_grid[current_position[0]][current_position[1]] = 1
             new_direction = mirror_direction(current_direction, 0)
             next_position = (current_position[0]+new_direction[0],
-                                current_position[1]+new_direction[1])
+                             current_position[1]+new_direction[1])
             lazor_path.append(next_position)
             lazor_direction.append(new_direction)
         # Opaque Block
@@ -304,6 +384,7 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
         else:
             targets_results.append(False)
     return lazor_grid, targets_results
+
 
 def mirror_direction(direction, side_of_block):
     '''
@@ -328,6 +409,7 @@ def mirror_direction(direction, side_of_block):
         new_direction = (direction[0] * -1, direction[1])
     return new_direction
 
+
 def pos_chk(x_position, y_position, size):
     '''
     Validate if the coordinates specified (x and y) are within the grid.
@@ -348,6 +430,7 @@ def pos_chk(x_position, y_position, size):
             Whether the coordiantes are valid (True) or not (False).
     '''
     return x_position >= 0 and x_position < size and y_position >= 0 and y_position < size
+
 
 if __name__ == '__main__':
     # Reflect block = 1
@@ -385,7 +468,9 @@ if __name__ == '__main__':
 
     print(test_targets)
     lazor_grid_results, test_targets_results = lazor(test_grid, test_start,
-                                                        test_direction, test_targets)
+                                                     test_direction, test_targets)
     print(test_targets_results)
 
-#openlazorfile('mad_1.bff')
+    mad_1 = openlazorfile('mad_1.bff')
+    mad_1_num = create_grid(mad_1)
+    print(mad_1_num)

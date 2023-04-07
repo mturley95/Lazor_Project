@@ -65,11 +65,11 @@ def openlazorfile(filename):
 
             elif l.startswith("B"):
                 opq_block = [int(x) for x in l.strip().split()[1:]]
-                num_opq_block = int(refl_block[0])
+                num_opq_block = int(opq_block[0])
 
             elif l.startswith("C"):
                 refr_block = [int(x) for x in l.strip().split()[1:]]
-                num_refr_block = int(refl_block[0])
+                num_refr_block = int(refr_block[0])
 
             elif l.startswith("L"):
                 laz_data = []

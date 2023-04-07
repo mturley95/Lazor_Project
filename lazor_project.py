@@ -335,7 +335,7 @@ if __name__ == '__main__':
     #        0 ,0 ,0 ,11,0 ,21,0
     #        0 ,0 ,0 ,0 ,20,2 ,20
     #        0 ,0 ,0 ,0 ,0 ,21,0
-    #        0 ,0 ,0 ,0 ,0 ,0 ,0
+    #        0 ,0 ,0 ,0 ,0 ,0 ,0    
 
     grid_test = [
         [0 for i in range(7)]
@@ -353,15 +353,15 @@ if __name__ == '__main__':
     grid_test[6][3] = 10
     grid_test[5][4] = 11
 
-    # print(test_grid)
+    print(grid_test)
 
     start_test = (1,6)
     direction_test = (1,-1)
     targets_test = [(2,3),(1,4)]
 
     ## The start of the level
-    win = Tk()
-    win.geometry("800x700")
+    # win = Tk()
+    # win.geometry("800x700")
 
     WIDTH_TEST = 300
     HEIGHT_TEST = WIDTH_TEST * 2
@@ -370,33 +370,33 @@ if __name__ == '__main__':
     MATRIX_SIZE_Y_TEST = 3
     DIAMETER_TEST = 10
 
-    image_start = Canvas(win, width=WIDTH_TEST, height=HEIGHT_TEST, bg="grey")
-    image_start.grid(row=0,column=0)
+    # image_start = Canvas(win, width=WIDTH_TEST, height=HEIGHT_TEST, bg="grey")
+    # image_start.grid(row=0,column=0)
 
-    # Create start of game
-    space_positions_test = [0,1,2,3,4,5,6,7,8]
-    block_positions_test = []
-    place_blocks(image_start, space_positions_test, block_positions_test,
-                 WIDTH_TEST, MATRIX_SIZE_X_TEST, MATRIX_SIZE_Y_TEST)
+    # # Create start of game
+    # space_positions_test = [0,1,2,3,4,5,6,7,8]
+    # block_positions_test = []
+    # place_blocks(image_start, space_positions_test, block_positions_test,
+    #              WIDTH_TEST, MATRIX_SIZE_X_TEST, MATRIX_SIZE_Y_TEST)
 
-    place_start_point(image_start, start_test,
-                      WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
+    # place_start_point(image_start, start_test,
+    #                   WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
 
-    place_targets(image_start, targets_test,
-                  WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
+    # place_targets(image_start, targets_test,
+    #               WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
 
-    ## Solve puzzle
-    # print(targets_test)
-    lazor_grid_results, targets_test_results = lazor(grid_test, start_test,
-                                                     direction_test, targets_test)
-    # print(targets_test_results)
-    print(lazor_grid_results)
-    block_positions_test = [3,7]
+    # ## Solve puzzle
+    # # print(targets_test)
+    # lazor_grid_results, targets_test_results = lazor(grid_test, start_test,
+    #                                                  direction_test, targets_test)
+    # # print(targets_test_results)
+    # print(lazor_grid_results)
+    # block_positions_test = [3,7]
 
-    ## Solve Button
-    image_button = Button(win, text="Solve Puzzle",
-                          command=lambda: solve_puzzle(space_positions_test,block_positions_test,
-                                                       start_test,targets_test,lazor_grid_results))
-    image_button.grid(row=0, column=1, padx=50)
+    # ## Solve Button
+    # image_button = Button(win, text="Solve Puzzle",
+    #                       command=lambda: solve_puzzle(space_positions_test,block_positions_test,
+    #                                                    start_test,targets_test,lazor_grid_results))
+    # image_button.grid(row=0, column=1, padx=50)
 
-    win.mainloop()
+    # win.mainloop()

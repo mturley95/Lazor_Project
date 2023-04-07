@@ -89,15 +89,15 @@ def openlazorfile(filename):
               for inner_list in target]
     for i in target:
         targets.append(tuple(i))
-    print(grid_list)
-    print(grid_list[0][0])
-    print(type(grid_list[0][0]))
-    print(num_refl_block)
-    print(num_opq_block)
-    print(num_refr_block)
-    print(laz_dict)
-    # print(type(laz_start[0][0]))
-    print(targets)
+    # print(grid_list)
+    # print(grid_list[0][0])
+    # print(type(grid_list[0][0]))
+    # print(num_refl_block)
+    # print(num_opq_block)
+    # print(num_refr_block)
+    # print(laz_dict)
+    # # print(type(laz_start[0][0]))
+    # print(targets)
     return grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets
 
 
@@ -127,7 +127,7 @@ class Block:
         grid_edit = self.grid
         for row in grid_edit:
             for col in grid_edit:
-                num_grid[new_position[0]+row][new_position[1]+col]
+                num_grid[new_position[0]+row-1][new_position[1]+col-1]
 
     def remove_position(self, old_position):
         self.positions.remove(old_position)
@@ -267,57 +267,75 @@ def create_grid(grid_list):
     x_count = 1
     y_count = 1
     new_grid = []
+    grid_edit = []
 
-    # Start with a grid of open blocks.
-    for line in grid_list:
-        for block in grid_list:
-            block = Block((x_count, y_count))
-            new_grid.append(block.grid)
-            print(new_grid)
-            x_count += 2
-        y_count += 2
-
-    x_count = 1
-    y_count = 1
+    new_grid_width = len(grid_list[0]) * 2 + 1
+    new_grid_height = len(grid_list) * 2 + 1
+    new_grid = [['0' for i in range(new_grid_width)]
+                for j in range(new_grid_height)]
 
     # Then, add the empty and open blocks
     for line in grid_list:
-        for block in grid_list:
+        for block in line:
             if block == 'o':
                 empty_block = Open_Block((x_count, y_count))
-                new_grid.append(empty_block.grid)
-            if block == 'x':
-                block = Block((x_count, y_count))
-                new_grid.append(block.grid)
-            x_count += 2
-        y_count += 2
+                grid_edit = empty_block.grid
+                for row in range(len(grid_edit)):
+                    for col in range(len(grid_edit[0])):
+                        new_grid[x_count+col-1][y_count+row-1] \
+                            = grid_edit[col][row]
 
-    x_count = 1
-    y_count = 1
+            if block == 'x':
+                closed_block = Block((x_count, y_count))
+                grid_edit = closed_block.grid
+                for row in range(len(grid_edit)):
+                    for col in range(len(grid_edit[0])):
+                        new_grid[x_count+col-1][y_count+row-1] \
+                            = grid_edit[col][row]
+            y_count += 2
+        y_count = 1
+        x_count += 2
 
     # Then, add the refract blocks
-    for line in grid_list:
-        for block in grid_list:
-            if block == 'C':
-                refract_block = Refract_Block((x_count, y_count))
-                new_grid.append(refract_block.grid)
-            x_count += 2
-        y_count += 2
-
     x_count = 1
     y_count = 1
+    grid_edit = []
+
+    for line in grid_list:
+        for block in line:
+            if block == 'C':
+                refract_block = Refract_Block((x_count, y_count))
+                grid_edit = refract_block.grid
+                for row in range(len(grid_edit)):
+                    for col in range(len(grid_edit[0])):
+                        new_grid[x_count+col-1][y_count+row-1] \
+                            = grid_edit[col][row]
+            y_count += 2
+        x_count += 2
 
     # Then, add the reflect and opaque blocks
+    x_count = 1
+    y_count = 1
+    grid_edit = []
+
     for line in grid_list:
-        for block in grid_list:
+        for block in line:
             if block == 'A':
                 reflect_block = Reflect_Block((x_count, y_count))
-                new_grid.append(reflect_block.grid)
+                grid_edit = reflect_block.grid
+                for row in range(len(grid_edit)):
+                    for col in range(len(grid_edit[0])):
+                        new_grid[x_count+col-1][y_count+row-1] \
+                            = grid_edit[col][row]
             if block == 'B':
                 opaque_block = Opaque_Block((x_count, y_count))
-                new_grid.append(opaque_block.grid)
-            x_count += 2
-        y_count += 2
+                grid_edit = opaque_block.grid
+                for row in range(len(grid_edit)):
+                    for col in range(len(grid_edit[0])):
+                        new_grid[x_count+col-1][y_count+row-1] \
+                            = grid_edit[col][row]
+            y_count += 2
+        x_count += 2
 
     return new_grid
 
@@ -487,10 +505,14 @@ if __name__ == '__main__':
                                                      test_direction, test_targets)
     print(test_targets_results)
 
-    mad_1 = openlazorfile('mad_1.bff')
-    mad_1_num = create_grid(mad_1)
-    print(mad_1_num)
+    # mad_1 = openlazorfile('mad_1.bff')
+    # mad_1_num_grid = create_grid(mad_1)
+    # print(mad_1_num_grid)
 
-    mad_7 = openlazorfile('mad_7.bff')
-    mad_7_num = create_grid(mad_7)
-    print(mad_7_num)
+    # mad_7 = openlazorfile('mad_7.bff')
+    # mad_7_num_grid = create_grid(mad_7)
+    # print(mad_7_num_grid)
+
+    tiny_5 = openlazorfile('tiny_5.bff')[0]
+    tiny_5_num_grid = create_grid(tiny_5)
+    print(tiny_5_num_grid)

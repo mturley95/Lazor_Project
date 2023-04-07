@@ -31,8 +31,14 @@ def openlazorfile(filename):
     refl_block = []
     opq_block = []
     refr_block = []
+    num_refl_block = 0
+    num_opq_block = 0
+    num_refr_block = 0
     laz_data = []
+    laz_count = 0
+    laz_dict = {}
     target = []
+    targets = []
     add_grid_to_list = False
 
     with open(filename, 'r') as file:
@@ -55,34 +61,44 @@ def openlazorfile(filename):
             # print(grid_list)
             elif l.startswith("A"):
                 refl_block = [int(x) for x in l.strip().split()[1:]]
+                num_refl_block = int(refl_block[0])
 
             elif l.startswith("B"):
                 opq_block = [int(x) for x in l.strip().split()[1:]]
+                num_opq_block = int(refl_block[0])
 
             elif l.startswith("C"):
                 refr_block = [int(x) for x in l.strip().split()[1:]]
+                num_refr_block = int(refl_block[0])
 
             elif l.startswith("L"):
+                laz_data = []
                 laz_data.append(l.split()[1:])
+                lazor_coor = (int(laz_data[0][0]), int(laz_data[0][1]))
+                lazor_dir = (int(laz_data[0][2]), int(laz_data[0][3]))
+                key = f"lazor{laz_count}"
+                laz_dict[key] = [(lazor_coor[0], lazor_coor[1]),
+                                 (lazor_dir[0], lazor_dir[1])]
+                laz_count += 1
 
             elif l.startswith("P"):
                 target.append(l.split()[1:])
+
     # converting the output from the loop into a int
-    lazor_coor = [int(laz_data[0][0]), int(laz_data[0][1])]
-    lazor_dir = [int(laz_data[0][2]), int(laz_data[0][3])]
-    target = [[int(element)for element in inner_list]
+    target = [[int(element) for element in inner_list]
               for inner_list in target]
+    for i in target:
+        targets.append(tuple(i))
     print(grid_list)
-    # print(grid_list[0][0])
-    # print(type(grid_list[0][0]))
-    # print(refl_block)
-    # print(opq_block)
-    # print(refr_block)
-    # print(lazor_coor)
-    # print(lazor_dir)
+    print(grid_list[0][0])
+    print(type(grid_list[0][0]))
+    print(num_refl_block)
+    print(num_opq_block)
+    print(num_refr_block)
+    print(laz_dict)
     # print(type(laz_start[0][0]))
-    # print(target)
-    return grid_list, refl_block
+    print(targets)
+    return grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets
 
 
 class Block:
@@ -474,3 +490,7 @@ if __name__ == '__main__':
     mad_1 = openlazorfile('mad_1.bff')
     mad_1_num = create_grid(mad_1)
     print(mad_1_num)
+
+    mad_7 = openlazorfile('mad_7.bff')
+    mad_7_num = create_grid(mad_7)
+    print(mad_7_num)

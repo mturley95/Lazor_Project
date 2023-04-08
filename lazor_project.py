@@ -129,7 +129,7 @@ class Block:
     def set_position(self, new_position, new_grid):
         '''
         This function takes the desired position of the block and adds
-        the values of this block into the grid
+        the values of this block into the grid. It ignores spaces where blocks are already present.
 
         **Parameters**
             new_position: *tuple*
@@ -144,9 +144,11 @@ class Block:
         self.positions.append(new_position)
         grid_edit = self.grid
         for y_index in range(len(grid_edit)):
-            for x_index in range(len(grid_edit)):
-                new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
-                    grid_edit[y_index][x_index]
+            for x_index in range(len(grid_edit[y_index])):
+                if new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 0 or \
+                    new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 100:
+                    new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
+                        grid_edit[y_index][x_index]
         return new_grid
 
     def remove_position(self, remove_position, new_grid):
@@ -174,11 +176,89 @@ class Block:
         ]
         grid_edit[1][1] = 100
         for y_index in range(len(grid_edit)):
-            for x_index in range(len(grid_edit)):
+            for x_index in range(len(grid_edit[y_index])):
                 new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
+                
+                if y_index-1 == -1 and x_index-1 == 0:
+                    adj_block = new_grid[remove_position[Y]+y_index-2][remove_position[X]+x_index-1]
+                    adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-2)
+                    if adj_block == 100:
+                        empty_block = Open_Block()
+                        empty_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 0:
+                        closed_block = Block()
+                        closed_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 1:
+                        reflect_block = Reflect_Block()
+                        reflect_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 2:
+                        opaque_block = Opaque_Block()
+                        opaque_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 3:
+                        refract_block = Refract_Block()
+                        refract_block.set_position(adj_block_pos, new_grid)
+
+                if y_index-1 == 0 and x_index-1 == -1:
+                    adj_block = new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-2]
+                    adj_block_pos = (remove_position[X]+x_index-2, remove_position[Y]+y_index-1)
+                    if adj_block == 100:
+                        empty_block = Open_Block()
+                        empty_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 0:
+                        closed_block = Block()
+                        closed_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 1:
+                        reflect_block = Reflect_Block()
+                        reflect_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 2:
+                        opaque_block = Opaque_Block()
+                        opaque_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 3:
+                        refract_block = Refract_Block()
+                        refract_block.set_position(adj_block_pos, new_grid)
+
+                if y_index-1 == 0 and x_index-1 == 1:
+                    adj_block = new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-0]
+                    adj_block_pos = (remove_position[X]+x_index-0, remove_position[Y]+y_index-1)
+                    if adj_block == 100:
+                        empty_block = Open_Block()
+                        empty_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 0:
+                        closed_block = Block()
+                        closed_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 1:
+                        reflect_block = Reflect_Block()
+                        reflect_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 2:
+                        opaque_block = Opaque_Block()
+                        opaque_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 3:
+                        refract_block = Refract_Block()
+                        refract_block.set_position(adj_block_pos, new_grid)
+
+                if y_index-1 == 1 and x_index-1 == 0:
+                    adj_block = new_grid[remove_position[Y]+y_index-0][remove_position[X]+x_index-1]
+                    adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-0)
+                    if adj_block == 100:
+                        empty_block = Open_Block()
+                        empty_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 0:
+                        closed_block = Block()
+                        closed_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 1:
+                        reflect_block = Reflect_Block()
+                        reflect_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 2:
+                        opaque_block = Opaque_Block()
+                        opaque_block.set_position(adj_block_pos, new_grid)
+                    if adj_block == 3:
+                        refract_block = Refract_Block()
+                        refract_block.set_position(adj_block_pos, new_grid)
+
         return new_grid
     
+
     def mirror_direction(self, lazor_direction, side_of_block):
         '''
         This function takes the direction of the lazor and flips it depending
@@ -201,6 +281,7 @@ class Block:
         if side_of_block == 1 or side_of_block == 3:
             new_direction = (lazor_direction[0] * -1, lazor_direction[1])
         return new_direction
+
 
     def lazor(self, lazor_position, lazor_direction):
         new_direction = (lazor_direction[0], lazor_direction[1])
@@ -242,6 +323,31 @@ class Reflect_Block(Block):
         reflect_grid[1][1] = 1
         self.grid = reflect_grid
 
+
+    def set_position(self, new_position, new_grid):
+        '''
+        This function takes the desired position of the block and adds
+        the values of this block into the grid
+
+        **Parameters**
+            new_position: *tuple*
+                A tuple to hold the x and y coordinates of the new position
+            new_grid: *list, list*
+                The grid that the values of the new block will be placed into
+
+        **Returns**
+            new_grid: *list, list*
+                The original grid with the updated values
+        '''
+        self.positions.append(new_position)
+        grid_edit = self.grid
+        for y_index in range(len(grid_edit)):
+            for x_index in range(len(grid_edit[y_index])):
+                new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
+                    grid_edit[y_index][x_index]
+        return new_grid
+
+
     def lazor(self, starting_grid, lazor_grid, lazor_position, lazor_direction):
         if starting_grid[lazor_position[0]][lazor_position[1]] == 10:
             lazor_grid[lazor_position[0]][lazor_position[1]] = 1
@@ -261,16 +367,41 @@ class Opaque_Block(Block):
     def __init__(self, type='opaque'):
         self.type = type
         self.positions = []
-        reflect_grid = [
+        opaque_grid = [
             [0 for i in range(3)]
             for j in range(3)
         ]
-        reflect_grid[0][1] = 20
-        reflect_grid[1][0] = 21
-        reflect_grid[2][1] = 20
-        reflect_grid[1][2] = 21
-        reflect_grid[1][1] = 2
-        self.grid = reflect_grid
+        opaque_grid[0][1] = 20
+        opaque_grid[1][0] = 21
+        opaque_grid[2][1] = 20
+        opaque_grid[1][2] = 21
+        opaque_grid[1][1] = 2
+        self.grid = opaque_grid
+
+
+    def set_position(self, new_position, new_grid):
+        '''
+        This function takes the desired position of the block and adds
+        the values of this block into the grid
+
+        **Parameters**
+            new_position: *tuple*
+                A tuple to hold the x and y coordinates of the new position
+            new_grid: *list, list*
+                The grid that the values of the new block will be placed into
+
+        **Returns**
+            new_grid: *list, list*
+                The original grid with the updated values
+        '''
+        self.positions.append(new_position)
+        grid_edit = self.grid
+        for y_index in range(len(grid_edit)):
+            for x_index in range(len(grid_edit[y_index])):
+                new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
+                    grid_edit[y_index][x_index]
+        return new_grid
+
 
     def lazor(self, lazor_position, lazor_direction):
         new_direction = (0, 0)
@@ -292,19 +423,23 @@ class Refract_Block(Block):
         UPDATE:
         - Update set_position to not overwrite other blocks that are next to it
         '''
+    
+    refract_count = 0
+
     def __init__(self, type='refract'):
         self.type = type
         self.positions = []
-        reflect_grid = [
+        refract_grid = [
             [0 for i in range(3)]
             for j in range(3)
         ]
-        reflect_grid[0][1] = 30
-        reflect_grid[1][0] = 31
-        reflect_grid[2][1] = 30
-        reflect_grid[1][2] = 31
-        reflect_grid[1][1] = 3
-        self.grid = reflect_grid
+        refract_grid[0][1] = 30
+        refract_grid[1][0] = 31
+        refract_grid[2][1] = 30
+        refract_grid[1][2] = 31
+        refract_grid[1][1] = 3
+        self.grid = refract_grid
+
 
     def lazor(self, starting_grid, lazor_grid, lazor_position, lazor_direction):
         new_direction_empty = (lazor_direction[0], lazor_direction[1])
@@ -322,89 +457,81 @@ class Refract_Block(Block):
 
         return [new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect]
 
+
 ## Create initial grid from file
 def create_grid(grid_list):
     x_count = 1
     y_count = 1
     new_grid = []
-    grid_edit = []
 
     new_grid_width = len(grid_list[0]) * 2 + 1
     new_grid_height = len(grid_list) * 2 + 1
-    new_grid = [['0' for i in range(new_grid_width)]
+    new_grid = [[0 for i in range(new_grid_width)]
                 for j in range(new_grid_height)]
 
     # Then, add the empty and open blocks
     for line in grid_list:
         for block in line:
             if block == 'o':
-                empty_block = Open_Block((x_count, y_count))
-                # grid_edit = empty_block.grid
+                empty_block = Open_Block()
                 empty_block.set_position((x_count, y_count), new_grid)
-                # for row in range(len(grid_edit)):
-                #     for col in range(len(grid_edit[0])):
-                #         new_grid[x_count+col-1][y_count+row-1] \
-                #             = grid_edit[col][row]
 
             if block == 'x':
-                closed_block = Block((x_count, y_count))
+                closed_block = Block()
                 closed_block.set_position((x_count, y_count), new_grid)
-                # grid_edit = closed_block.grid
-                # for row in range(len(grid_edit)):
-                #     for col in range(len(grid_edit[0])):
-                #         new_grid[x_count+col-1][y_count+row-1] \
-                #             = grid_edit[col][row]
-            x_count += 2
-        x_count = 1
-        y_count += 2
 
-    # Then, add the refract blocks
-    x_count = 1
-    y_count = 1
-    grid_edit = []
+            if block == 'A':
+                reflect_block = Reflect_Block()
+                reflect_block.set_position((x_count, y_count), new_grid)
 
-    for line in grid_list:
-        for block in line:
+            if block == 'B':
+                opaque_block = Opaque_Block()
+                opaque_block.set_position((x_count, y_count), new_grid)
+
             if block == 'C':
-                refract_block = Refract_Block((x_count, y_count))
+                refract_block = Refract_Block()
                 refract_block.set_position((x_count, y_count), new_grid)
-                # grid_edit = refract_block.grid
-                # for row in range(len(grid_edit)):
-                #     for col in range(len(grid_edit[0])):
-                #         new_grid[x_count+col-1][y_count+row-1] \
-                #             = grid_edit[col][row]
+
             x_count += 2
         x_count = 1
         y_count += 2
 
-    # Then, add the reflect and opaque blocks
-    x_count = 1
-    y_count = 1
+    # # Then, add the refract blocks
+    # x_count = 1
+    # y_count = 1
     # grid_edit = []
 
-    for line in grid_list:
-        for block in line:
-            if block == 'A':
-                reflect_block = Reflect_Block((x_count, y_count))
-                reflect_block.set_position((x_count, y_count), new_grid)
-                # grid_edit = reflect_block.grid
-                # for row in range(len(grid_edit)):
-                #     for col in range(len(grid_edit[0])):
-                #         new_grid[x_count+col-1][y_count+row-1] \
-                #             = grid_edit[col][row]
-            if block == 'B':
-                opaque_block = Opaque_Block((x_count, y_count))
-                opaque_block.set_position((x_count, y_count), new_grid)
-                # grid_edit = opaque_block.grid
-                # for row in range(len(grid_edit)):
-                #     for col in range(len(grid_edit[0])):
-                #         new_grid[x_count+col-1][y_count+row-1] \
-                #             = grid_edit[col][row]
-            x_count += 2
-        x_count = 1
-        y_count += 2
+    # for line in grid_list:
+    #     for block in line:
+    #         if block == 'C':
+    #             refract_block = Refract_Block((x_count, y_count))
+    #             refract_block.set_position((x_count, y_count), new_grid)
+
+    #         x_count += 2
+    #     x_count = 1
+    #     y_count += 2
+
+    # # Then, add the reflect and opaque blocks
+    # x_count = 1
+    # y_count = 1
+    # # grid_edit = []
+
+    # for line in grid_list:
+    #     for block in line:
+    #         if block == 'A':
+    #             reflect_block = Reflect_Block((x_count, y_count))
+    #             reflect_block.set_position((x_count, y_count), new_grid)
+
+    #         if block == 'B':
+    #             opaque_block = Opaque_Block((x_count, y_count))
+    #             opaque_block.set_position((x_count, y_count), new_grid)
+
+    #         x_count += 2
+    #     x_count = 1
+    #     y_count += 2
 
     return new_grid
+
 
 ## Output visualization
 def place_blocks(canvas, space_positions, block_positions, width, matrix_size_x, matrix_size_y):
@@ -844,7 +971,7 @@ if __name__ == '__main__':
     # mad_7_num_grid = create_grid(mad_7)
     # print(mad_7_num_grid)
 
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('tiny_5.bff')
+    # grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('tiny_5.bff')
 
     # print_matrix(grid_list)
     # print(num_refl_block)
@@ -854,9 +981,11 @@ if __name__ == '__main__':
     # print(targets)
 
     # tiny_5 = openlazorfile('tiny_5.bff')[0]
-    tiny_5_num_grid = create_grid(grid_list)
+    # print(tiny_5)
+    # tiny_5_num_grid = create_grid(tiny_5)
     # print(tiny_5_num_grid)
-    print_matrix(tiny_5_num_grid)
+
+    # print(tiny_5_num_grid)
 
     # lazor1 = laz_dict['lazor0']
     # print(lazor1)
@@ -866,8 +995,28 @@ if __name__ == '__main__':
     # print(positions)
     # print(results)
 
-    block = Refract_Block()
+    # tiny_5_num_grid = create_grid(grid_list)
+    # # print(tiny_5_num_grid)
+    # print_matrix(tiny_5_num_grid)
+
+    # block = Refract_Block()
+    # print("\n")
+    # print_matrix(block.set_position((1,1), tiny_5_num_grid))
+    # print("\n")
+    # print_matrix(block.remove_position((1,1), tiny_5_num_grid))
+
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
+    print(grid_list)
+    test_num_grid = create_grid(grid_list)
+    print_matrix(test_num_grid)
+
+    reflect_block = Reflect_Block()
+    refract_block = Refract_Block()
     print("\n")
-    print_matrix(block.set_position((1,1), tiny_5_num_grid))
+    print_matrix(reflect_block.set_position((3,3), test_num_grid))
     print("\n")
-    print_matrix(block.remove_position((1,1), tiny_5_num_grid))
+    print_matrix(reflect_block.remove_position((3,3), test_num_grid))
+    print("\n")
+    print_matrix(refract_block.set_position((3,3), test_num_grid))
+    print("\n")
+    print_matrix(refract_block.remove_position((3,3), test_num_grid))

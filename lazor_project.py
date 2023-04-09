@@ -169,7 +169,8 @@ class Block:
         UPDATE:
         - Fix to make sure it doesn't overwrite values for a block next to it
         '''
-        self.positions.remove(remove_position)
+        # self.positions.remove(remove_position)
+        size = len(new_grid)
         grid_edit = [
             [0 for i in range(3)]
             for j in range(3)
@@ -179,7 +180,7 @@ class Block:
             for x_index in range(len(grid_edit[y_index])):
                 new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
-                
+
                 if y_index-1 == -1 and x_index-1 == 0:
                     adj_block = new_grid[remove_position[Y]+y_index-2][remove_position[X]+x_index-1]
                     adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-2)
@@ -219,6 +220,10 @@ class Block:
                         refract_block.set_position(adj_block_pos, new_grid)
 
                 if y_index-1 == 0 and x_index-1 == 1:
+                    temp_x_position = remove_position[X]+x_index-0
+                    temp_y_position = remove_position[Y]+y_index-1
+                    if not pos_chk(temp_x_position, temp_y_position, size):
+                        continue
                     adj_block = new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-0]
                     adj_block_pos = (remove_position[X]+x_index-0, remove_position[Y]+y_index-1)
                     if adj_block == 100:
@@ -767,6 +772,16 @@ def draw_lazor(canvas, coordinates, width, matrix_size_x, diameter):
     y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
 
     for i, coordinate in enumerate(coordinates):
+        # if coordinates[i+1][0] - coordinate[0] > 1 and coordinates[i+1][1] - coordinate[1] > 1:
+        #     count = 0
+        #     while coordinates[count][0] != coordinates[i+1][0] and coordinates[count][1] != coordinates[i+1][1]:
+        #         if coordinates[i+1][0] - coordinates[count][0] == 1 and coordinates[i+1][1] - coordinates[count][1] == 1:
+        #             value = (coordinates[count][0], coordinates[count][1])
+        #         else:
+        #             value = (0,0)
+        #         count += 1
+
+        #     coordinates[count] = value
         try:
             start_x_position = x_size + (coordinate[0]*(block_size/2))
             start_y_position = y_size + (coordinate[1]*(block_size/2))
@@ -865,25 +880,66 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
         # Refract Block
         if starting_grid[current_position[Y]][current_position[X]] == 30:
             lazor_grid[current_position[Y]][current_position[X]] = 1
-            refract_block = Refract_Block()
-            next_position1, next_direction1, next_position2, next_direction2 = \
-                refract_block.interact_lazor(current_position, current_direction, 0)
-            ## Add the deletion of the block once it goes in
-            # if current_direction[Y] < 0:
-            #     refract_block.remove_position()
-            lazor_path.append(next_position1)
-            lazor_direction.append(next_direction1)
-            lazor_path.append(next_position2)
-            lazor_direction.append(next_direction2)
+            check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+            if pos_chk(check_position_y[X], check_position_y[Y], size) and \
+            starting_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+            starting_grid[check_position_y[Y]][check_position_y[X]] != 100:
+                refract_block = Refract_Block()
+                next_position1, next_direction1, next_position2, next_direction2 = \
+                    refract_block.interact_lazor(current_position, current_direction, 0)
+                ## Add the deletion of the block once it goes in
+                # if current_direction[Y] < 0:
+                #     block_position = (current_position[X], current_position[Y]-1)
+                #     # print("current_direction[Y] < 0")
+                #     # print(f"Block position is {block_position}")
+                #     # starting_grid = refract_block.remove_position(block_position, starting_grid)
+                #     # print_matrix(starting_grid)
+                # if current_direction[Y] > 0:
+                #     block_position = (current_position[X], current_position[Y]+1)
+                #     print("current_direction[Y] > 0")
+                #     print(f"Block position is {block_position}")
+                #     starting_grid = refract_block.remove_position(block_position, starting_grid)
+                #     print_matrix(starting_grid)
+                lazor_path.append(next_position1)
+                lazor_direction.append(next_direction1)
+                lazor_path.append(next_position2)
+                lazor_direction.append(next_direction2)
+            else:
+                open_block = Open_Block()
+                next_position, next_direction = open_block.interact_lazor(current_position, current_direction)
+                lazor_path.append(next_position)
+                lazor_direction.append(next_direction)
+
         if starting_grid[current_position[Y]][current_position[X]] == 31:
             lazor_grid[current_position[Y]][current_position[X]] = 1
-            refract_block = Refract_Block()
-            next_position1, next_direction1, next_position2, next_direction2 = \
-                refract_block.interact_lazor(current_position, current_direction, 1)
-            lazor_path.append(next_position1)
-            lazor_direction.append(next_direction1)
-            lazor_path.append(next_position2)
-            lazor_direction.append(next_direction2)
+            check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+            if pos_chk(check_position_x[X], check_position_x[Y], size) and \
+            starting_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+            starting_grid[check_position_x[Y]][check_position_x[X]] != 100:
+                refract_block = Refract_Block()
+                next_position1, next_direction1, next_position2, next_direction2 = \
+                    refract_block.interact_lazor(current_position, current_direction, 1)
+                # if current_direction[X] < 0:
+                #     block_position = (current_position[X]-1, current_position[Y])
+                #     print("current_direction[X] < 0")
+                #     print(f"Block position is {block_position}")
+                #     starting_grid = refract_block.remove_position(block_position, starting_grid)
+                #     print_matrix(starting_grid)
+                # if current_direction[X] > 0:
+                #     block_position = (current_position[X]+1, current_position[Y])
+                #     print("current_direction[X] > 0")
+                #     print(f"Block position is {block_position}")
+                #     starting_grid = refract_block.remove_position(block_position, starting_grid)
+                #     print_matrix(starting_grid)
+                lazor_path.append(next_position1)
+                lazor_direction.append(next_direction1)
+                lazor_path.append(next_position2)
+                lazor_direction.append(next_direction2)
+            else:
+                open_block = Open_Block()
+                next_position, next_direction = open_block.interact_lazor(current_position, current_direction)
+                lazor_path.append(next_position)
+                lazor_direction.append(next_direction)
 
     targets_results = []
     for i, target in enumerate(targets):
@@ -989,23 +1045,33 @@ if __name__ == '__main__':
     # Opaque block = 2
     # Left, Right = X0
     # Top, Bottom = X1
-    # grid = 0 ,0 ,0 ,10,0 ,0 ,0
-    #        0 ,0 ,11,1 ,11,0 ,0
-    #        0 ,0 ,0 ,10,0 ,10,0
-    #        0 ,0 ,0 ,0 ,11,1 ,11
-    #        0 ,0 ,0 ,0 ,0 ,10,0
-    #        0 ,0 ,0 ,0 ,0 ,0 ,0
+    # grid = 0 ,0   ,0   ,10  ,0   ,0  ,0
+    #        0 ,100 ,11  ,1   ,11  ,100,0
+    #        0 ,0   ,0   ,10  ,0   ,10 ,0
+    #        0 ,100 ,0   ,100 ,11  ,1  ,11
+    #        0 ,0   ,0   ,0   ,0   ,10 ,0
+    #        0 ,100 ,0   ,100 ,0   ,100,0
+    #        0 ,0   ,0   ,0   ,0   ,0  ,0
 
     grid_test = [
         [0 for i in range(7)]
         for j in range(7)
     ]
 
-    grid_test[0][3] = 10
-    grid_test[1][2] = 11
-    grid_test[1][3] = 1
-    grid_test[1][4] = 11
-    grid_test[2][3] = 10
+    grid_test[1][1] = 100
+    grid_test[1][5] = 100
+    grid_test[3][1] = 100
+    grid_test[3][3] = 100
+    grid_test[5][1] = 100
+    grid_test[5][3] = 100
+    grid_test[5][5] = 100
+    
+    grid_test[0][3] = 30
+    grid_test[1][2] = 31
+    grid_test[1][3] = 3
+    grid_test[1][4] = 31
+    grid_test[2][3] = 30
+    
     grid_test[2][5] = 30
     grid_test[3][4] = 31
     grid_test[3][5] = 3
@@ -1037,9 +1103,9 @@ if __name__ == '__main__':
     # block_positions_test = []
 
     blocks_dict_test = {'space': [0,1,2,3,4,5,6,7,8],
-                        'reflect': [0,1],
-                        'refract': [2,3],
-                        'opaque': [4,5]}
+                        'reflect': [],
+                        'refract': [3,7],
+                        'opaque': []}
 
     place_blocks(image_start, blocks_dict_test,
                  WIDTH_TEST, MATRIX_SIZE_X_TEST, MATRIX_SIZE_Y_TEST)
@@ -1053,12 +1119,17 @@ if __name__ == '__main__':
     #               WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
 
     # ## Solve puzzle
-    # print(targets_test)
-    # lazor_grid_results, lazor_positions_test, targets_test_results = \
-    #     lazor(grid_test, start_test,direction_test, targets_test)
-    # print(targets_test_results)
-    # print(lazor_positions_test)
-    # print_matrix(lazor_grid_results)
+    print(targets_test)
+    lazor_grid_results, lazor_positions_test, targets_test_results = \
+        lazor(grid_test, start_test,direction_test, targets_test)
+    print(targets_test_results)
+    print(lazor_positions_test)
+    print_matrix(lazor_grid_results)
+
+    draw_lazor(image_start, lazor_positions_test,
+               WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
+    
+    win.mainloop()
     # block_positions_test = [3,7]
 
     # ## Solve Button
@@ -1120,21 +1191,21 @@ if __name__ == '__main__':
     # print_matrix(block.remove_position((1,1), tiny_5_num_grid))
 
 #####
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
-    print_matrix(grid_list)
-    print("\n")
-    test_num_grid = create_grid(grid_list)
-    print_matrix(test_num_grid)
+    # grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
+    # print_matrix(grid_list)
+    # print("\n")
+    # test_num_grid = create_grid(grid_list)
+    # print_matrix(test_num_grid)
 
 
 
-    reflect_block = Reflect_Block()
-    refract_block = Refract_Block()
-    print("\n")
-    print_matrix(reflect_block.set_position((3,3), test_num_grid))
-    print("\n")
-    print_matrix(reflect_block.remove_position((3,3), test_num_grid))
-    print("\n")
-    print_matrix(refract_block.set_position((3,3), test_num_grid))
-    print("\n")
-    print_matrix(refract_block.remove_position((3,3), test_num_grid))
+    # reflect_block = Reflect_Block()
+    # refract_block = Refract_Block()
+    # print("\n")
+    # print_matrix(reflect_block.set_position((3,3), test_num_grid))
+    # print("\n")
+    # print_matrix(reflect_block.remove_position((3,3), test_num_grid))
+    # print("\n")
+    # print_matrix(refract_block.set_position((3,3), test_num_grid))
+    # print("\n")
+    # print_matrix(refract_block.remove_position((3,3), test_num_grid))

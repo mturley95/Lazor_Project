@@ -524,6 +524,8 @@ def create_grid(grid_list):
             x_count += 2
         x_count = 1
         y_count += 2
+    
+    possible_pos = empty_block.get_positions()
 
     # # Then, add the refract blocks
     # x_count = 1
@@ -559,7 +561,7 @@ def create_grid(grid_list):
     #     x_count = 1
     #     y_count += 2
 
-    return new_grid
+    return new_grid, possible_pos
 
 def create_possible_solutions(starting_grid, lazors, targets, num_reflect, num_refract, num_opaque):
     '''

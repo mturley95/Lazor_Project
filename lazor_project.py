@@ -493,6 +493,12 @@ def create_grid(grid_list):
     y_count = 1
     new_grid = []
 
+    empty_block = Open_Block()
+    closed_block = Block()
+    reflect_block = Reflect_Block()
+    opaque_block = Opaque_Block()
+    refract_block = Refract_Block()
+
     new_grid_width = len(grid_list[0]) * 2 + 1
     new_grid_height = len(grid_list) * 2 + 1
     new_grid = [[0 for i in range(new_grid_width)]
@@ -502,23 +508,18 @@ def create_grid(grid_list):
     for line in grid_list:
         for block in line:
             if block == 'o':
-                empty_block = Open_Block()
                 empty_block.set_position((x_count, y_count), new_grid)
 
             if block == 'x':
-                closed_block = Block()
                 closed_block.set_position((x_count, y_count), new_grid)
 
             if block == 'A':
-                reflect_block = Reflect_Block()
                 reflect_block.set_position((x_count, y_count), new_grid)
 
             if block == 'B':
-                opaque_block = Opaque_Block()
                 opaque_block.set_position((x_count, y_count), new_grid)
 
             if block == 'C':
-                refract_block = Refract_Block()
                 refract_block.set_position((x_count, y_count), new_grid)
 
             x_count += 2

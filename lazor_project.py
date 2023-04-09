@@ -10,7 +10,7 @@ outputs what the solution would be for each specific level.
 # Imports
 from tkinter import *
 import itertools
-import copy 
+import copy
 
 # Global Variable
 X = 0
@@ -506,11 +506,9 @@ def create_grid(grid_list):
     new_grid = [[0 for i in range(new_grid_width)]
                 for j in range(new_grid_height)]
 
-    
     # Then, add the empty and open blocks
     for line in grid_list:
         for block in line:
-            
             if block == 'o':
                 empty_block.set_position((x_count, y_count), new_grid)
 
@@ -530,8 +528,6 @@ def create_grid(grid_list):
         x_count = 1
         y_count += 2
     
-    possible_pos = empty_block.get_positions()
-
     possible_pos = empty_block.get_positions()
 
     # # Then, add the refract blocks
@@ -1062,10 +1058,10 @@ def permutations_blocks(filename):
         # print("\n")
         
         
-    #print(permutations_grids[0])
-    # print_matrix(permutations_grids[0])
-    # print("\n")
-    # print_matrix(permutations_grids[51])
+    # print(permutations_grids[0])
+    print_matrix(permutations_grids[0])
+    print("\n")
+    print_matrix(permutations_grids[51])
     # # print(grid_list)
     # print(num_refl_block)
     # print(num_opq_block)

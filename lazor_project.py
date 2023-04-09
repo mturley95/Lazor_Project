@@ -9,6 +9,8 @@ outputs what the solution would be for each specific level.
 """
 # Imports
 from tkinter import *
+import itertools
+import copy 
 
 # Global Variable
 X = 0
@@ -493,37 +495,42 @@ def create_grid(grid_list):
     y_count = 1
     new_grid = []
 
+    empty_block = Open_Block()
+    closed_block = Block()
+    reflect_block = Reflect_Block()
+    opaque_block = Opaque_Block()
+    refract_block = Refract_Block()
+
     new_grid_width = len(grid_list[0]) * 2 + 1
     new_grid_height = len(grid_list) * 2 + 1
     new_grid = [[0 for i in range(new_grid_width)]
                 for j in range(new_grid_height)]
 
+    
     # Then, add the empty and open blocks
     for line in grid_list:
         for block in line:
+            
             if block == 'o':
-                empty_block = Open_Block()
                 empty_block.set_position((x_count, y_count), new_grid)
 
             if block == 'x':
-                closed_block = Block()
                 closed_block.set_position((x_count, y_count), new_grid)
 
             if block == 'A':
-                reflect_block = Reflect_Block()
                 reflect_block.set_position((x_count, y_count), new_grid)
 
             if block == 'B':
-                opaque_block = Opaque_Block()
                 opaque_block.set_position((x_count, y_count), new_grid)
 
             if block == 'C':
-                refract_block = Refract_Block()
                 refract_block.set_position((x_count, y_count), new_grid)
 
             x_count += 2
         x_count = 1
         y_count += 2
+
+    possible_pos = empty_block.get_positions()
 
     # # Then, add the refract blocks
     # x_count = 1
@@ -559,7 +566,7 @@ def create_grid(grid_list):
     #     x_count = 1
     #     y_count += 2
 
-    return new_grid
+    return new_grid, possible_pos
 
 def create_possible_solutions(starting_grid, lazors, targets, num_reflect, num_refract, num_opaque):
     '''
@@ -984,6 +991,86 @@ def print_matrix(input_list):
     for rows in input_list:
         print(rows)
 
+def permutations_blocks(filename):
+    '''
+    returns a permutations where the blocks can be placed in a list
+
+    **Parameters**
+
+        filename: *str*
+            The file name of that from where we get the combinations
+         
+
+    **Returns**
+        combinations: *list*
+            List of permutations where the blocks can be placed
+    '''
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(filename)
+    updated_grid, possible_pos = create_grid(grid_list) #update the grid to place blocks and get the list of possible positions 
+    #print(possible_pos)
+    
+    #finding the total number of blocks that will define the lenght of set of combinations
+    num_movable_blocks = num_refl_block+num_opq_block+num_refr_block
+    # converting the movable blocks into a list of values to be use in the for loop later
+    movable_blocks = []
+    for i in range(num_refl_block):
+        movable_blocks.append(1)
+    for i in range(num_opq_block):
+        movable_blocks.append(2)
+    for i in range(num_refr_block):
+        movable_blocks.append(3)
+    
+    #print(movable_blocks)
+    #Creating the permutations of postiitons where blocks can be placed
+    position_perm = itertools.permutations(possible_pos,num_movable_blocks)
+    perm_list = list(position_perm)
+    #print(perm_list) 
+    #print(len(perm_list))
+    #print(perm_list[0])
+    #print(perm_list[0][0])
+    permutations_grids = []
+    #print(updated_grid)
+    #new_Grid = updated_grid[:]
+    for set in perm_list:
+        #print(set)
+        #print(range(len(set)))
+        new_Grid = copy.deepcopy(updated_grid)
+        #print(new_Grid)
+        for pos in range(len(set)):
+            #print(pos)
+            #print(set[pos])
+            #print(new_Grid)
+            if movable_blocks[pos] == 1:
+                reflect_blk = Reflect_Block()
+                reflect_blk.set_position(set[pos], new_Grid)
+            if movable_blocks[pos] == 2:
+                opaque_blk = Opaque_Block()
+                opaque_blk.set_position(set[pos], new_Grid)
+            if movable_blocks[pos] == 3:
+                refract_blk = Refract_Block()
+                refract_blk.set_position(set[pos], new_Grid)
+            #print(range(len(pos)))
+
+        
+        permutations_grids.append(new_Grid)
+        #new_Grid = copy.deepcopy(updated_grid)  
+        # print_matrix(new_Grid)
+        # print("\n")
+        # print_matrix(updated_grid)
+        # print("\n")
+        
+        
+    #print(permutations_grids[0])
+    # print_matrix(permutations_grids[0])
+    # print("\n")
+    # print_matrix(permutations_grids[51])
+    # # print(grid_list)
+    # print(num_refl_block)
+    # print(num_opq_block)
+    # print(num_refr_block)
+    # print(updated_grid)
+    return permutations_grids
+
 if __name__ == '__main__':
     # Reflect block = 1
     # Opaque block = 2
@@ -996,6 +1083,8 @@ if __name__ == '__main__':
     #        0 ,0 ,0 ,0 ,0 ,10,0
     #        0 ,0 ,0 ,0 ,0 ,0 ,0
 
+    permutations_blocks('mad_1.bff')
+    
     grid_test = [
         [0 for i in range(7)]
         for j in range(7)
@@ -1012,7 +1101,7 @@ if __name__ == '__main__':
     grid_test[3][6] = 31
     grid_test[4][5] = 30
 
-    print_matrix(grid_test)
+    #print_matrix(grid_test)
 
     start_test = (1,6)
     direction_test = (1,-1)
@@ -1120,21 +1209,21 @@ if __name__ == '__main__':
     # print_matrix(block.remove_position((1,1), tiny_5_num_grid))
 
 #####
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
-    print_matrix(grid_list)
-    print("\n")
-    test_num_grid = create_grid(grid_list)
-    print_matrix(test_num_grid)
+    # grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
+    # # print_matrix(grid_list)
+    # # print("\n")
+    # test_num_grid = create_grid(grid_list)
+    # print_matrix(test_num_grid)
 
 
 
-    reflect_block = Reflect_Block()
-    refract_block = Refract_Block()
-    print("\n")
-    print_matrix(reflect_block.set_position((3,3), test_num_grid))
-    print("\n")
-    print_matrix(reflect_block.remove_position((3,3), test_num_grid))
-    print("\n")
-    print_matrix(refract_block.set_position((3,3), test_num_grid))
-    print("\n")
-    print_matrix(refract_block.remove_position((3,3), test_num_grid))
+    # reflect_block = Reflect_Block()
+    # # #refract_block = Refract_Block()
+    # print("\n")
+    # print_matrix(reflect_block.set_position((3,3), test_num_grid))
+    # print("\n")
+    #print_matrix(reflect_block.remove_position((3,3), test_num_grid))
+    #print("\n")
+    #print_matrix(refract_block.set_position((3,3), test_num_grid))
+    #print("\n")
+    #print_matrix(refract_block.remove_position((3,3), test_num_grid))

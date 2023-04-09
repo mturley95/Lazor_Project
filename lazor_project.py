@@ -437,7 +437,7 @@ class Opaque_Block(Block):
                     grid_edit[y_index][x_index]
         return new_grid
 
-    def lazor(self, lazor_position, lazor_direction):
+    def interact_lazor(self, lazor_position, lazor_direction):
         new_direction = (0, 0)
         new_position = lazor_position
         return new_position, new_direction

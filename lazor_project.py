@@ -1462,14 +1462,61 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
     
     perm_list = list(position_perm)
 
+    # Run the lazor through the original grid to check if solved and
+    # generate initial lazor path.
+    lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(num_grid, laz_dict, targets)
+    
+    # If all targets are hit, save the solution and break the code.
+    if all(targets_results):
+        solution_grid = num_grid
+        # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
+        # with the values for all lasers individually, and the results of the targets and whether they were hit.
+        return solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results
+    
+    # Identify any permutations that do not affect the lazor path at all and delete those.
+    neighbor_positions = [(0,1), (0,-1), (1,0), (-1,0)]
+    lazor_neighbors = []
+
+    # Update list of all block space the lazor passes next to.
+    for i in lazor_positions:
+        for j in neighbor_positions:
+            lazor_neighbors.append((i[0]+j[0], i[1]+j[1]))
+
+    # Reduce the list of neighbors to only unique neighbors.
+    lazor_neighbor_set = set(lazor_neighbors)
+
+    # For all identified neighbors, check to ensure they are in the grid.
+    neighbor_set = copy.deepcopy(lazor_neighbor_set)
+    size = (len(num_grid[0]), len(num_grid))
+    for option in lazor_neighbor_set:
+        # Check to ensure adjacent block is on the grid.
+        if not pos_chk(option, size):
+            neighbor_set.remove(option)
+
+    # For all permutation options, identify if the lazor passes next to at
+    # least one block within the permutation. If it does, keep it.
+    # If it does not, remove it.
+    lazor_perm_list = copy.deepcopy(perm_list)
+    # Iterate through to check each permutation.
+    for option in perm_list:
+        unique = True
+        # Identify if any positions in the permutation would be adjacent to any spaces that the lazor is passing through.
+        for position in option:
+            for neighbor in neighbor_set:
+                if position == neighbor:
+                    unique = False
+        # Remove options that don't affect the lazor at all.
+        if unique == True:
+            lazor_perm_list.remove(option)
+
     # Iterate through all of the permutations until the lazor successfully solves the puzzle in one.
     solution_grid = []
     lazor_grid = []
     lazor_positions = []
     lazor_positions_dict = {}
     targets_results = []
-
-    for set in perm_list:
+    # Iterate through and check each option.
+    for option in lazor_perm_list:
         
         # Make a copy of the original grid that can be updated.
         new_grid = copy.deepcopy(num_grid)
@@ -1479,14 +1526,15 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
         opaque_blk = Opaque_Block()
         refract_blk = Refract_Block()
 
-        for pos in range(len(set)):
+        # Iterate through each position in each option to place blocks.
+        for pos in range(len(option)):
 
             if movable_blocks[pos] == 1:
-                reflect_blk.set_position(set[pos], new_grid)
+                reflect_blk.set_position(option[pos], new_grid)
             if movable_blocks[pos] == 2:
-                opaque_blk.set_position(set[pos], new_grid)
+                opaque_blk.set_position(option[pos], new_grid)
             if movable_blocks[pos] == 3:
-                refract_blk.set_position(set[pos], new_grid)
+                refract_blk.set_position(option[pos], new_grid)
 
         # Run the lazor through the solutions attempt.
         lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(new_grid, laz_dict, targets)
@@ -1606,7 +1654,7 @@ if __name__ == '__main__':
     # win.mainloop()
 
     ### Correct Solution try
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('mad_7.bff')
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test_check_lazor_path.bff')
     print("opened file")
     num_grid, possible_pos = create_grid(grid_list)
     print("created grid")
@@ -1621,4 +1669,3 @@ if __name__ == '__main__':
     print(targets_results)
     print(lazor_positions)
     print(lazor_positions_dict)
-

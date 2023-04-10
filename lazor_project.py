@@ -1351,8 +1351,12 @@ def solve_puzzle(permutations_grids, laz_dict, targets):
     '''
 
     # Iterate through all of the permutations until the lazor successfully solves the puzzle in one.
+    solution_grid = []
+    lazor_grid = []
+    lazor_positions = []
+    lazor_positions_dict = {}
+    targets_results = []
     for i in permutations_grids:
-        solution_grid = []
         lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(i, laz_dict, targets)
         # If all targets are hit, save the solution and break the code.
         if all(targets_results):
@@ -1606,7 +1610,7 @@ if __name__ == '__main__':
     # mad_7_num_grid = create_grid(mad_7)
     # print(mad_7_num_grid)
 
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('tiny_5.bff')
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
     num_grid, possible_pos = create_grid(grid_list)
     permutations_grids = permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block)
     print(len(permutations_grids))

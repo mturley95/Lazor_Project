@@ -1,15 +1,16 @@
 GRID START
-A o o
-o B A
-o C o
+B o o
+o o o
+o o o
+o o o
 GRID STOP
 
-A 3
-B 2
-C 1
+A 1
+B 0
+C 0
 
-L 4 5 -1 -1
-L 3 3 1 1
+L 6 7 -1 1
+L 5 8 -1 1
 
-P 1 2
 P 6 3
+P 1 8

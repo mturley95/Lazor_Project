@@ -1126,6 +1126,9 @@ def lazor(num_grid, laz_dict, targets):
 
         # Continue to track the lazor while options remain in its path.
         while len(lazor_path) > 0:
+            # print(key)
+            # print(lazor_path)
+            # print(lazor_direction)
             current_position = lazor_path.pop()
             lazor_positions.append(current_position)
             lazor_positions_dict[laz_grid_key] += [current_position]
@@ -1153,12 +1156,25 @@ def lazor(num_grid, laz_dict, targets):
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
                 lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
-                # Determine the next position and direction from the reflect block class.
-                next_position, next_direction = \
-                    reflect_block.interact_lazor(current_position, current_direction, 0)
-                # Append the next lazor position and direction to their lists.
-                lazor_path.append(next_position)
-                lazor_direction.append(next_direction)
+
+                check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+                if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
+                num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+                num_grid[check_position_y[Y]][check_position_y[X]] != 100:
+                    # Determine the next position and direction from the reflect block class.
+                    next_position, next_direction = \
+                        reflect_block.interact_lazor(current_position, current_direction, 0)
+                    # Append the next lazor position and direction to their lists.
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
+                else:
+                    # If the lazor is inside the reflect block,
+                    # Treat the reflect block as an open block and determine the next position and
+                    # direction from the open block class.
+                    next_position, next_direction = \
+                        empty_block.interact_lazor(current_position, current_direction)
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
 
             # Reflect block (side): How to move when the lazor is moving through a 
             # reflect block from the side.
@@ -1166,22 +1182,60 @@ def lazor(num_grid, laz_dict, targets):
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
                 lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
-                # Determine the next position and direction from the reflect block class.
-                next_position, next_direction = \
-                    reflect_block.interact_lazor(current_position, current_direction, 1)
-                # Append the next lazor position and direction to their lists.
-                lazor_path.append(next_position)
-                lazor_direction.append(next_direction)
+
+                check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+                if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
+                num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+                num_grid[check_position_x[Y]][check_position_x[X]] != 100:
+                    # Determine the next position and direction from the reflect block class.
+                    next_position, next_direction = \
+                        reflect_block.interact_lazor(current_position, current_direction, 1)
+                    # Append the next lazor position and direction to their lists.
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
+                else:
+                    # If the lazor is inside the reflect block,
+                    # Treat the reflect block as an open block and determine the next position and
+                    # direction from the open block class.
+                    next_position, next_direction = \
+                        empty_block.interact_lazor(current_position, current_direction)
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
 
             # Opaque block: How to move when the lazor is moving through an opaque block.
             if num_grid[current_position[Y]][current_position[X]] == 20:
-                # Indicate the lazor has passed through the current position.
-                lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+                if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
+                num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+                num_grid[check_position_y[Y]][check_position_y[X]] != 100:
+                    # Indicate the lazor has passed through the current position.
+                    lazor_grid[current_position[Y]][current_position[X]] = 1
+                    lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                else:
+                    # If the lazor is inside the refract block,
+                    # Treat the refract block as an open block and determine the next position and
+                    # direction from the open block class.
+                    next_position, next_direction = \
+                        empty_block.interact_lazor(current_position, current_direction)
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
+
             if num_grid[current_position[Y]][current_position[X]] == 21:
-                # Indicate the lazor has passed through the current position.
-                lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+                if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
+                num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+                num_grid[check_position_x[Y]][check_position_x[X]] != 100:
+                    # Indicate the lazor has passed through the current position.
+                    lazor_grid[current_position[Y]][current_position[X]] = 1
+                    lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                else:
+                    # If the lazor is inside the refract block,
+                    # Treat the refract block as an open block and determine the next position and
+                    # direction from the open block class.
+                    next_position, next_direction = \
+                        empty_block.interact_lazor(current_position, current_direction)
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
 
             # Refract Block (top/bottom): How to move when the lazor is moving through a 
             # refract block from the top/bottom.
@@ -1210,24 +1264,24 @@ def lazor(num_grid, laz_dict, targets):
                     lazor_direction.append(next_direction2)
                 else:
                     # If the lazor is inside the refract block,
-                    # Treat the refract block as an open block and determine the next position and 
+                    # Treat the refract block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
                         empty_block.interact_lazor(current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
-            # Refract Block (top/bottom): How to move when the lazor is moving through a 
+            # Refract Block (top/bottom): How to move when the lazor is moving through a
             # refract block from the top/bottom.
             if num_grid[current_position[Y]][current_position[X]] == 31:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
                 lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
-                # Check the next position to identify whether the lazor is inside a refract block or 
+                # Check the next position to identify whether the lazor is inside a refract block or
                 # entering a refract block.
-                # If inside a refract block, the next position will be a 0 and 
+                # If inside a refract block, the next position will be a 0 and
                 # the lazor should not refract again.
-                # If entering a refract block, the next position will not be a 0 and 
+                # If entering a refract block, the next position will not be a 0 and
                 # the lazor should refract.
                 check_position_x = (current_position[X]+current_direction[X],current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
@@ -1244,7 +1298,7 @@ def lazor(num_grid, laz_dict, targets):
                     lazor_direction.append(next_direction2)
                 else:
                     # If the lazor is inside the refract block,
-                    # Treat the refract block as an open block and determine the next position and 
+                    # Treat the refract block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
                         empty_block.interact_lazor(current_position, current_direction)
@@ -1359,11 +1413,14 @@ def solve_puzzle(permutations_grids, laz_dict, targets):
     lazor_positions_dict = {}
     targets_results = []
     for i in permutations_grids:
+        
         lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(i, laz_dict, targets)
         # If all targets are hit, save the solution and break the code.
         if all(targets_results):
             solution_grid = i
             break
+    if solution_grid == []:
+        print("No Solution Found")
     # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
     # with the values for all lasers individually, and the results of the targets and whether they were hit.
     return solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results
@@ -1474,7 +1531,7 @@ def permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, n
                 refract_blk.set_position(set[pos], new_Grid)
             #print(range(len(pos)))
 
-        
+        print("appending new grid")
         permutations_grids.append(new_Grid)
         #new_Grid = copy.deepcopy(num_grid)  
         # print_matrix(new_Grid)
@@ -1612,8 +1669,10 @@ if __name__ == '__main__':
     # mad_7_num_grid = create_grid(mad_7)
     # print(mad_7_num_grid)
 
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('dark_1.bff')
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('numbered_6.bff')
+    print("opened file")
     num_grid, possible_pos = create_grid(grid_list)
+    print("created grid")
     permutations_grids = permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block)
     print(len(permutations_grids))
     solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results = solve_puzzle(permutations_grids, laz_dict, targets)

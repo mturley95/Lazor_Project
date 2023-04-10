@@ -110,69 +110,156 @@ def openlazorfile(filename):
 ## Block Creation
 class Block:
     '''
-    This class 
+    This class is used to create block objects to populate the grid with. They will interact
+    with the grid and the lazor in different ways as they are positioned on the grid.
+
+    **Functions**
+        __init__(self, type='empty'):
+            Initializes the block object.
+            Return: None
+        get_type(self):
+            Returns the type of block that exists at a specific position.
+            Return self.type: *str*
+        get_positions(self):
+            Returns the different positions where the block object exists on the grid.
+            Return self.positions: *list* of tuples
+        set_position(self, new_position, new_grid):
+            Takes the desired position of the block and adds the values of this block into the grid. 
+            It ignores spaces where blocks are already present.
+            It adds the position to the block's list of positions.
+            Return new_grid: *list*
+        remove_position(self, remove_position, new_grid):
+            Takes the position of a block to be removed and resets the values of the block in the grid.
+            It ensures all adjacent blocks have their values maintained.
+            It removes the position from the block's list of positions.
+            Return new_grid: *list*
+        mirror_direction(self, lazor_direction, side_of_block):
+            This function takes the direction of the lazor as it begins interacting with a block and 
+            flips it depending on which side of the block it hits.
+            Return new_direction: *tuple*
+        interact_lazor(self, lazor_position, lazor_direction):
+            This function calculates the new position and direction of the lazor based on how the block
+            interacts with the lazor.
+            Return new_position, new_direction: *tuple*, *tuple*
+        
+    **Sub-Classes**
+        Open_Block:
+            Creates blocks that are empty and open for other blocks to be placed in their positions.
+        Reflect_Block:
+            Creates blocks that reflect the lazor when it comes into contact.
+        Opaque_Block:
+            Creates blocks that absorb the lazor when it comes into contact.
+        Refract_Block:
+            Creates blocks that both reflect the lazor and allows it to pass through when it comes into contact.
     '''
 
     # Initialize the Block class.
-    def __init__(self, type='empty'):
-        self.type = type
+    def __init__(self):
+        '''
+        This function initializes the Block class object. It performs the following functions:
+            self.type: Assigns its type.
+            self.grid: Creates its 3x3 grid of elements that determine how the lazor will interact with it.
+            self.positions: Generates an empty position list.
+
+        **Parameters**
+            N/A
+
+        **Returns**
+            N/A
+        '''
+        self.type = 'empty'
         self.grid = [
             [0 for i in range(3)]
             for j in range(3)
         ]
         self.positions = []
 
-    def get_type(self):
-        return self.type
+    def get_type(self, position):
+        '''
+        This function returns the type of block that exists at a specific position.
+
+        **Parameters**
+            position: *tuple*
+                A tuple to hold the x and y coordinates of the position that is being checked
+
+        **Returns**
+            self.type: *str*
+                The type of block that exists at that position
+        '''
+
+        for i in self.positions:
+            if i == position:
+                return self.type
 
     def get_positions(self):
+        '''
+        This function returns the the positions of the block object that have been assigned to the grid.
+
+        **Parameters**
+            N/A
+
+        **Returns**
+            self.positions: *list* of tuples
+                The positions on the grid that the block object exists at
+        '''
+
         return self.positions
 
-    def set_position(self, new_position, new_grid):
+    def set_position(self, new_position, num_grid):
         '''
-        This function takes the desired position of the block and adds
-        the values of this block into the grid. It ignores spaces where blocks are already present.
+        This function takes the desired position of the block and adds the values of this block into the grid. 
+            It ignores spaces where block values are already present.
+            It adds the position to the block's list of positions.
 
         **Parameters**
             new_position: *tuple*
                 A tuple to hold the x and y coordinates of the new position
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The grid that the values of the new block will be placed into
 
         **Returns**
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The original grid with the updated values
         '''
+        
+        # Add the new position to the block's list of positions.
         self.positions.append(new_position)
+
+        # Modify the original grid by adding the block's unique grid of numbers to the position specified.
         grid_edit = self.grid
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
-                if new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 0 or \
-                    new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 100:
-                    new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
+                # Only overwrites the grid numbers for open spaces.
+                if num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 0 or \
+                    num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 100:
+                    num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                         grid_edit[y_index][x_index]
-        return new_grid
+        
+        # Return the new grid with the modified block values.
+        return num_grid
 
-    def remove_position(self, remove_position, new_grid):
+    def remove_position(self, remove_position, num_grid):
         '''
-        This function takes the desired position of the block and removes
-        the values of this block into the grid
+        This function takes the position of a block to be removed and resets the values of the block in the grid.
+            It ensures all adjacent blocks have their values maintained.
+            It removes the position from the block's list of positions.
 
         **Parameters**
-            old_position: *tuple*
+            remove_position: *tuple*
                 A tuple to hold the x and y coordinates of the old position
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The grid that the values of the new block will be placed into
 
         **Returns**
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The original grid with the updated values
-
-        UPDATE:
-        - Fix to make sure it doesn't overwrite values for a block next to it
         '''
-        # self.positions.remove(remove_position)
-        size = len(new_grid)
+
+        # Add the specified position from the block's list of positions.
+        self.positions.remove(remove_position)
+
+        # Modify the original grid by removing the block's unique grid of numbers from the position specified.
+        size = (len(num_grid[0]), len(num_grid))
         grid_edit = [
             [0 for i in range(3)]
             for j in range(3)
@@ -180,98 +267,132 @@ class Block:
         grid_edit[1][1] = 100
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
-                new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-1] = \
+                num_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
 
+                # Check neighboring blocks and ensure their values are replaced on the grid for positions
+                # shared by the block that is being removed.
+
+                # Check above the block being removed.
                 if y_index-1 == -1 and x_index-1 == 0:
-                    adj_block = new_grid[remove_position[Y]+y_index-2][remove_position[X]+x_index-1]
+                    
+                    # Identify adjacent block type and position.
+                    adj_block = num_grid[remove_position[Y]+y_index-2][remove_position[X]+x_index-1]
                     adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-2)
-                    if adj_block == 100:
-                        empty_block = Open_Block()
-                        empty_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 0:
-                        closed_block = Block()
-                        closed_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 1:
-                        reflect_block = Reflect_Block()
-                        reflect_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 2:
-                        opaque_block = Opaque_Block()
-                        opaque_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 3:
-                        refract_block = Refract_Block()
-                        refract_block.set_position(adj_block_pos, new_grid)
 
-                if y_index-1 == 0 and x_index-1 == -1:
-                    adj_block = new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-2]
-                    adj_block_pos = (remove_position[X]+x_index-2, remove_position[Y]+y_index-1)
-                    if adj_block == 100:
-                        empty_block = Open_Block()
-                        empty_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 0:
-                        closed_block = Block()
-                        closed_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 1:
-                        reflect_block = Reflect_Block()
-                        reflect_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 2:
-                        opaque_block = Opaque_Block()
-                        opaque_block.set_position(adj_block_pos, new_grid)
-                    if adj_block == 3:
-                        refract_block = Refract_Block()
-                        refract_block.set_position(adj_block_pos, new_grid)
-
-                if y_index-1 == 0 and x_index-1 == 1:
-                    ### Mitch this is what I added
-                    temp_x_position = remove_position[X]+x_index-0
-                    temp_y_position = remove_position[Y]+y_index-1
-                    if not pos_chk(temp_x_position, temp_y_position, size):
+                    # Check to ensure adjacent block is on the grid.
+                    if not pos_chk(adj_block_pos, size):
                         continue
-                    ###
-                    adj_block = new_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-0]
-                    adj_block_pos = (remove_position[X]+x_index-0, remove_position[Y]+y_index-1)
+                    
+                    # Check adjacent block type and replace value to removed space.
                     if adj_block == 100:
                         empty_block = Open_Block()
-                        empty_block.set_position(adj_block_pos, new_grid)
+                        empty_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 0:
                         closed_block = Block()
-                        closed_block.set_position(adj_block_pos, new_grid)
+                        closed_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 1:
                         reflect_block = Reflect_Block()
-                        reflect_block.set_position(adj_block_pos, new_grid)
+                        reflect_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 2:
                         opaque_block = Opaque_Block()
-                        opaque_block.set_position(adj_block_pos, new_grid)
+                        opaque_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 3:
                         refract_block = Refract_Block()
-                        refract_block.set_position(adj_block_pos, new_grid)
+                        refract_block.set_position(adj_block_pos, num_grid)
 
+                # Check to the left of the block being removed.
+                if y_index-1 == 0 and x_index-1 == -1:
+                    
+                    # Identify adjacent block type and position.                    
+                    adj_block = num_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-2]
+                    adj_block_pos = (remove_position[X]+x_index-2, remove_position[Y]+y_index-1)
+                    
+                    # Check to ensure adjacent block is on the grid.
+                    if not pos_chk(adj_block_pos, size):
+                        continue
+
+                    # Check adjacent block type and replace value to removed space.
+                    if adj_block == 100:
+                        empty_block = Open_Block()
+                        empty_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 0:
+                        closed_block = Block()
+                        closed_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 1:
+                        reflect_block = Reflect_Block()
+                        reflect_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 2:
+                        opaque_block = Opaque_Block()
+                        opaque_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 3:
+                        refract_block = Refract_Block()
+                        refract_block.set_position(adj_block_pos, num_grid)
+
+                # Check to the right of the block being removed.
+                if y_index-1 == 0 and x_index-1 == 1:
+                    
+                    # Identify adjacent block type and position.                      
+                    adj_block = num_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-0]
+                    adj_block_pos = (remove_position[X]+x_index-0, remove_position[Y]+y_index-1)             
+                    
+                    # Check to ensure adjacent block is on the grid.
+                    if not pos_chk(adj_block_pos, size):
+                        continue
+
+                    # Check adjacent block type and replace value to removed space.
+                    if adj_block == 100:
+                        empty_block = Open_Block()
+                        empty_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 0:
+                        closed_block = Block()
+                        closed_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 1:
+                        reflect_block = Reflect_Block()
+                        reflect_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 2:
+                        opaque_block = Opaque_Block()
+                        opaque_block.set_position(adj_block_pos, num_grid)
+                    if adj_block == 3:
+                        refract_block = Refract_Block()
+                        refract_block.set_position(adj_block_pos, num_grid)
+
+                # Check below the block being removed.
                 if y_index-1 == 1 and x_index-1 == 0:
-                    adj_block = new_grid[remove_position[Y]+y_index-0][remove_position[X]+x_index-1]
+
+                    # Identify adjacent block type and position.
+                    adj_block = num_grid[remove_position[Y]+y_index-0][remove_position[X]+x_index-1]
                     adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-0)
+
+                    # Check to ensure adjacent block is on the grid.
+                    if not pos_chk(adj_block_pos, size):
+                        continue
+
+                    # Check adjacent block type and replace value to removed space.
                     if adj_block == 100:
                         empty_block = Open_Block()
-                        empty_block.set_position(adj_block_pos, new_grid)
+                        empty_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 0:
                         closed_block = Block()
-                        closed_block.set_position(adj_block_pos, new_grid)
+                        closed_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 1:
                         reflect_block = Reflect_Block()
-                        reflect_block.set_position(adj_block_pos, new_grid)
+                        reflect_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 2:
                         opaque_block = Opaque_Block()
-                        opaque_block.set_position(adj_block_pos, new_grid)
+                        opaque_block.set_position(adj_block_pos, num_grid)
                     if adj_block == 3:
                         refract_block = Refract_Block()
-                        refract_block.set_position(adj_block_pos, new_grid)
+                        refract_block.set_position(adj_block_pos, num_grid)
 
-        return new_grid
+        # Return the new grid with modified values.
+        return num_grid
     
 
     def mirror_direction(self, lazor_direction, side_of_block):
         '''
         This function takes the direction of the lazor and flips it depending
-        on which side of the block it hits
+        on which side of the block it hits.
 
         **Parameters**
             direction: *tuple*
@@ -285,17 +406,22 @@ class Block:
             new_direction: *tuple*
                 A tuple for the new direction of the lazor
         '''
+
+        # Determine a new, reflected direction for the lazor dependent on which
+        # side of the block it enters the reflect or refract block on.
         if side_of_block == 0 or side_of_block == 2:
             new_direction = (lazor_direction[0], lazor_direction[1] * -1)
         if side_of_block == 1 or side_of_block == 3:
             new_direction = (lazor_direction[0] * -1, lazor_direction[1])
+
+        # Return the new direction of the lazor.
         return new_direction
 
 
     def interact_lazor(self, lazor_position, lazor_direction):
         '''
         This function calculates the new position and direcetion based on how the block
-        interacts with the lazor
+        interacts with the lazor.
 
         **Parameters**
             lazor_position: *tuple*
@@ -313,19 +439,52 @@ class Block:
             new_direction: *tuple*
                 The next vector for the direction of the lazor
         '''
+
+        # Determine the new direction and position for the lazor.
+        # There is no change in lazor direction for open blocks,
+        # but the lazor poistion advances by one space.
         new_direction = (lazor_direction[0], lazor_direction[1])
         new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
+        
+        # Return the lazor's new position and direction.
         return new_position, new_direction
 
 
 class Open_Block(Block):
+    '''
+    A class that inherits the Block class
+    Creates the open block with its unique attributes.
 
-    empty_count = 0
+    **Parameters**
+        None
 
-    def __init__(self, type='open'):
-        self.type = type
+    **Returns**
+        None
+    '''
+
+    def __init__(self):
+        '''
+        This function initializes the Open_Block class object. It performs the following functions:
+            self.type: Assigns its type.
+            self.grid: Creates its 3x3 grid of elements that determine how the lazor will interact with it.
+            self.positions: Generates an empty position list.
+
+        **Parameters**
+            self:
+
+        **Returns**
+            N/A
+        '''
+
+        # Set the block type to 'open'.
+        self.type = 'open'
         self.positions = []
+
+        # Set the new grid to be all 0's with one 100 in the middle for an open block.
+        # 0   0   0
+        # 0  100  0
+        # 0   0   0
         open_grid = [
             [0 for i in range(3)]
             for j in range(3)
@@ -335,12 +494,39 @@ class Open_Block(Block):
 
 
 class Reflect_Block(Block):
+    '''
+    A class that inherits the Block class
+    Creates the reflect block with its unique attributes.
 
-    reflect_count = 0
+    **Parameters**
+        None
 
-    def __init__(self, type='reflect'):
-        self.type = type
+    **Returns**
+        None
+    '''
+
+    def __init__(self):
+        '''
+        This function initializes the Reflect_Block class object. It performs the following functions:
+            self.type: Assigns its type.
+            self.grid: Creates its 3x3 grid of elements that determine how the lazor will interact with it.
+            self.positions: Generates an empty position list.
+
+        **Parameters**
+            self:
+
+        **Returns**
+            N/A
+        '''
+
+        # Set the block type to 'reflect'.
+        self.type = 'reflect'
         self.positions = []
+
+        # Set the new grid to the values associated with a reflect block.
+        # 0  10   0
+        # 11  1  11
+        # 0  10   0
         reflect_grid = [
             [0 for i in range(3)]
             for j in range(3)
@@ -353,28 +539,35 @@ class Reflect_Block(Block):
         self.grid = reflect_grid
 
 
-    def set_position(self, new_position, new_grid):
+    def set_position(self, new_position, num_grid):
         '''
-        This function takes the desired position of the block and adds
-        the values of this block into the grid
+        This function takes the desired position of the block and adds the values of this block into the grid. 
+            It overwrites spaces where block values are already present.
+            It adds the position to the block's list of positions.
 
         **Parameters**
             new_position: *tuple*
                 A tuple to hold the x and y coordinates of the new position
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The grid that the values of the new block will be placed into
 
         **Returns**
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The original grid with the updated values
         '''
+
+        # Add the new position to the block's list of positions.
         self.positions.append(new_position)
+
+        # Modify the original grid by adding the block's unique grid of numbers to the position specified.
         grid_edit = self.grid
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
-                new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
+                num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
-        return new_grid
+                
+        # Return the new grid with the modified block values.
+        return num_grid
 
 
     def interact_lazor(self, lazor_position, lazor_direction, side_of_block):
@@ -398,19 +591,52 @@ class Reflect_Block(Block):
             new_direction: *tuple*
                 The next vector for the direction of the lazor
         '''
+
+        # Determine the new direction and position for the lazor.
+        # The lazor direction reflects either vertically or horizontally dependent on the direction that 
+        # it entered the block from and the lazor poistion advances by one space in the new direction.
         new_direction = mirror_direction(lazor_direction, side_of_block)
         new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
+        
+        # Return the lazor's new position and direction.
         return new_position, new_direction
 
 
 class Opaque_Block(Block):
+    '''
+    A class that inherits the Block class
+    Creates the opaque block with its unique attributes.
 
-    opaque_count = 0
+    **Parameters**
+        None
 
-    def __init__(self, type='opaque'):
-        self.type = type
+    **Returns**
+        None
+    '''
+
+    def __init__(self):
+        '''
+        This function initializes the Opaque_Block class object. It performs the following functions:
+            self.type: Assigns its type.
+            self.grid: Creates its 3x3 grid of elements that determine how the lazor will interact with it.
+            self.positions: Generates an empty position list.
+
+        **Parameters**
+            self:
+
+        **Returns**
+            N/A
+        '''
+
+        # Set the block type to 'opaque'.
+        self.type = 'opaque'
         self.positions = []
+
+        # Set the new grid to the values associated with a opaque block.
+        # 0  20   0
+        # 21  2  21
+        # 0  20   0
         opaque_grid = [
             [0 for i in range(3)]
             for j in range(3)
@@ -423,55 +649,83 @@ class Opaque_Block(Block):
         self.grid = opaque_grid
 
 
-    def set_position(self, new_position, new_grid):
+    def set_position(self, new_position, num_grid):
         '''
-        This function takes the desired position of the block and adds
-        the values of this block into the grid
+        This function takes the desired position of the block and adds the values of this block into the grid. 
+            It overwrites spaces where block values are already present.
+            It adds the position to the block's list of positions.
 
         **Parameters**
             new_position: *tuple*
                 A tuple to hold the x and y coordinates of the new position
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The grid that the values of the new block will be placed into
 
         **Returns**
-            new_grid: *list, list*
+            num_grid: *list, list*
                 The original grid with the updated values
         '''
+
+        # Add the new position to the block's list of positions.
         self.positions.append(new_position)
+
+        # Modify the original grid by adding the block's unique grid of numbers to the position specified.
         grid_edit = self.grid
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
-                new_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
+                num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
-        return new_grid
+                
+        # Return the new grid with the modified block values.
+        return num_grid
+
 
     def interact_lazor(self, lazor_position, lazor_direction):
+
+        # Determine the new direction and position for the lazor.
+        # The lazor direction stops and the lazor becomes stationary upon entering the new block.
+        # The lazor position remains at the entry point to the block.
         new_direction = (0, 0)
         new_position = lazor_position
+
+        # Return the lazor's new position and direction.
         return new_position, new_direction
 
 
 class Refract_Block(Block):
     '''
-        A class that inherits the Block class
-        Creates for the refract block
+    A class that inherits the Block class
+    Creates the refract block with its unique attributes.
+
+    **Parameters**
+        None
+
+    **Returns**
+        None
+    '''
+
+    def __init__(self):
+        '''
+        This function initializes the Refract_Block class object. It performs the following functions:
+            self.type: Assigns its type.
+            self.grid: Creates its 3x3 grid of elements that determine how the lazor will interact with it.
+            self.positions: Generates an empty position list.
 
         **Parameters**
-            None
+            self:
 
         **Returns**
-            None
-
-        UPDATE:
-        - Update set_position to not overwrite other blocks that are next to it
+            N/A
         '''
-    
-    refract_count = 0
 
-    def __init__(self, type='refract'):
-        self.type = type
+        # Set the block type to 'refract'.
+        self.type = 'refract'
         self.positions = []
+
+        # Set the new grid to the values associated with a refract block.
+        # 0  30   0
+        # 31  3  31
+        # 0  30   0
         refract_grid = [
             [0 for i in range(3)]
             for j in range(3)
@@ -485,100 +739,105 @@ class Refract_Block(Block):
 
 
     def interact_lazor(self, lazor_position, lazor_direction, side_of_block):
+        
+        # Determine the new direction and position for the lazor. For the refract block, 
+        # two lazor pathway will be created: one that passes the lazor through and 
+        # one that reflects the lazor.
+
+        # There is no change in lazor direction for empty block path,
+        # but the lazor poistion advances by one space.
         new_direction_empty = (lazor_direction[0], lazor_direction[1])
         new_position_empty = (lazor_position[0] + lazor_direction[0],
                               lazor_position[1] + lazor_direction[1])
 
+        # The lazor direction reflects either vertically or horizontally dependent on the direction that 
+        # it entered the block from and the lazor poistion advances by one space in the new direction.
         new_direction_reflect = mirror_direction(lazor_direction, side_of_block)
         new_position_reflect = (lazor_position[0] + new_direction_reflect[0],
                                 lazor_position[1] + new_direction_reflect[1])
 
+        # Return the lazor's two new positions and directions.
         return new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect
 
 
-## Create initial grid from file
 def create_grid(grid_list):
+    '''
+    This function takes in the grid list from the inital open file function that contains only letters
+    and transforms it into a larger grid of numbers for the lazor to pass through and interact with.
+
+    **Parameters**
+        grid_list: *list, list*
+            A matrix holding the letter coding for blocks in the starting grid.
+
+    **Returns**
+        new_grid: *list, list*
+            A matrix holding the number coding for blocks in the starting grid.
+        possible_pos: *list* of tuples
+            A list containing all of the positions of open blocks that can be replaced with other block
+            classes when attempting to solve the puzzle.
+    '''
+
+    # Start x_count, y_count at (1, 1) to ensure block positions are placed on odd numbers of the matrix.
     x_count = 1
     y_count = 1
     new_grid = []
 
+    # Initialize all block objects for use in placing on the starting grid.
     empty_block = Open_Block()
     closed_block = Block()
     reflect_block = Reflect_Block()
     opaque_block = Opaque_Block()
     refract_block = Refract_Block()
 
+    # Determine the new grid size based on the size of the letter grid from the open file function.
+    # Initialize the new grid as completely open with all 0's.
     new_grid_width = len(grid_list[0]) * 2 + 1
     new_grid_height = len(grid_list) * 2 + 1
     new_grid = [[0 for i in range(new_grid_width)]
                 for j in range(new_grid_height)]
 
-    # Then, add the empty and open blocks
+    # Iterate through the letter grid to identify block types for each position and place blocks 
+    # of the correct type into the number grid as each position is determined.
     for line in grid_list:
         for block in line:
+            # 'o' corresponds to empty blocks that can be replaced by others in the future.
             if block == 'o':
                 empty_block.set_position((x_count, y_count), new_grid)
 
+            # 'x' corresponds to empty blocks that cannot be replaced by others in the future.
             if block == 'x':
                 closed_block.set_position((x_count, y_count), new_grid)
 
+            # 'A' corresponds to reflect blocks that cannot be replaced by others in the future.
             if block == 'A':
                 reflect_block.set_position((x_count, y_count), new_grid)
 
+            # 'B' corresponds to opaque blocks that cannot be replaced by others in the future.
             if block == 'B':
                 opaque_block.set_position((x_count, y_count), new_grid)
 
+            # 'C' corresponds to refract blocks that cannot be replaced by others in the future.
             if block == 'C':
                 refract_block.set_position((x_count, y_count), new_grid)
 
+            # Update the x_count as one line is iterated through.
             x_count += 2
+        # Reset the x_count to 1 as the next line is started.
         x_count = 1
         y_count += 2
     
+    # Identify all of the empty block positions that can be replaced by others in the future.
     possible_pos = empty_block.get_positions()
 
-    # # Then, add the refract blocks
-    # x_count = 1
-    # y_count = 1
-    # grid_edit = []
-
-    # for line in grid_list:
-    #     for block in line:
-    #         if block == 'C':
-    #             refract_block = Refract_Block((x_count, y_count))
-    #             refract_block.set_position((x_count, y_count), new_grid)
-
-    #         x_count += 2
-    #     x_count = 1
-    #     y_count += 2
-
-    # # Then, add the reflect and opaque blocks
-    # x_count = 1
-    # y_count = 1
-    # # grid_edit = []
-
-    # for line in grid_list:
-    #     for block in line:
-    #         if block == 'A':
-    #             reflect_block = Reflect_Block((x_count, y_count))
-    #             reflect_block.set_position((x_count, y_count), new_grid)
-
-    #         if block == 'B':
-    #             opaque_block = Opaque_Block((x_count, y_count))
-    #             opaque_block.set_position((x_count, y_count), new_grid)
-
-    #         x_count += 2
-    #     x_count = 1
-    #     y_count += 2
-
+    # Return the new grid of numbers that was generated and the list of positions that can be manipulated.
     return new_grid, possible_pos
 
-def create_possible_solutions(starting_grid, lazors, targets, num_reflect, num_refract, num_opaque):
+def create_possible_solutions(num_grid, lazors, targets, num_reflect, num_refract, num_opaque):
     '''
     Try solutions to the puzzle until it is solved
 
     **Parameters**
-        starting_grid: *list, list*
+        num_grid: *list, list*
             A matrix holding the starting position for the grid
         lazors: *dict*
             Dictionary holding the lazors position and direction
@@ -598,7 +857,7 @@ def create_possible_solutions(starting_grid, lazors, targets, num_reflect, num_r
     lazor0 = lazors['lazor0']
     lazor0_start = lazor0[0]
     lazor0_direction = lazor0[1]
-    lazor(starting_grid, lazor0_start, lazor0_direction, targets)
+    lazor(num_grid, lazor0_start, lazor0_direction, targets)
 
 ## Output visualization
 def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
@@ -800,14 +1059,14 @@ def draw_lazor(canvas, coordinates, width, matrix_size_x, diameter):
         except:
             pass
 
-def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
+def lazor(num_grid, laz_dict, targets):
     '''
     This function takes the grid of the current status of the blocks and tracks the lazor
     to see if it reaches the target.
 
     **Parameters**
 
-        starting_grid: *list, list, int*
+        num_grid: *list, list, int*
             A list of lists holding what blocks and targets are in the grid
             This grid will be tested as a solution.
         lazor_start: *tuple*
@@ -823,143 +1082,190 @@ def lazor(starting_grid, lazor_start, lazor_start_direction, targets):
             This grid holds the information where the lazor traveled
         targets_results: *list, str*
             A list showing if all the targets were hit by the lazor
-
-    UPDATE:
-    - Add the class functionality for interacting with the lazor
-
     '''
-    size = len(starting_grid)
-    lazor_path = [lazor_start]
-    lazor_direction = [lazor_start_direction]
-    lazor_grid = [
-        [0 for i in range(size)]
-        for j in range(size)
-    ]
-    lazor_grid[lazor_start[Y]][lazor_start[X]] = 1
 
+    # Initialize all block objects for use in manipulating lazor.
+    empty_block = Open_Block()
+    reflect_block = Reflect_Block()
+    opaque_block = Opaque_Block()
+    refract_block = Refract_Block()
+
+    # Identify size of the grid.
+    size = (len(num_grid[0]), len(num_grid))
+
+    # Initialize the lazor grid to be all 0's to start.
+    lazor_grid = [
+        [0 for x in range(size[0])]
+        for y in range(size[1])
+    ]
     lazor_positions = []
 
-    while len(lazor_path) > 0:
-        current_position = lazor_path.pop()
-        lazor_positions.append(current_position)
-        current_direction = lazor_direction.pop()
-        if not pos_chk(current_position[X], current_position[Y], size):
-            continue
-        ## Nothing is there
-        if starting_grid[current_position[Y]][current_position[X]] == 0:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-            ## Update with class
-            # next_position = (current_position[X]+current_direction[X],
-            #                  current_position[Y]+current_direction[Y])
-            open_block = Open_Block()
-            next_position, next_direction = open_block.interact_lazor(current_position, current_direction)
-            ##
-            lazor_path.append(next_position)
-            lazor_direction.append(next_direction)
-        # Reflect Block
-        if starting_grid[current_position[Y]][current_position[X]] == 10:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-            ## Update with class
-            reflect_block = Reflect_Block()
-            next_position, next_direction = reflect_block.interact_lazor(current_position, current_direction, 0)
-            # new_direction = mirror_direction(current_direction, 1)
-            # next_position = (current_position[X]+new_direction[X],
-            #                  current_position[Y]+new_direction[Y])
-            ##
-            lazor_path.append(next_position)
-            lazor_direction.append(next_direction)
-        if starting_grid[current_position[Y]][current_position[X]] == 11:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-            ## Update with class
-            reflect_block = Reflect_Block()
-            next_position, next_direction = reflect_block.interact_lazor(current_position, current_direction, 1)
-            # new_direction = mirror_direction(current_direction, 0)
-            # next_position = (current_position[X]+new_direction[X],
-            #                  current_position[Y]+new_direction[Y])
-            ##
-            lazor_path.append(next_position)
-            lazor_direction.append(next_direction)
-        # Opaque Block
-        if starting_grid[current_position[Y]][current_position[X]] == 20:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-        if starting_grid[current_position[Y]][current_position[X]] == 21:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-        # Refract Block
-        if starting_grid[current_position[Y]][current_position[X]] == 30:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-            check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
-            if pos_chk(check_position_y[X], check_position_y[Y], size) and \
-            starting_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
-            starting_grid[check_position_y[Y]][check_position_y[X]] != 100:
-                refract_block = Refract_Block()
-                next_position1, next_direction1, next_position2, next_direction2 = \
-                    refract_block.interact_lazor(current_position, current_direction, 0)
-                ## Add the deletion of the block once it goes in
-                # if current_direction[Y] < 0:
-                #     block_position = (current_position[X], current_position[Y]-1)
-                #     # print("current_direction[Y] < 0")
-                #     # print(f"Block position is {block_position}")
-                #     # starting_grid = refract_block.remove_position(block_position, starting_grid)
-                #     # print_matrix(starting_grid)
-                # if current_direction[Y] > 0:
-                #     block_position = (current_position[X], current_position[Y]+1)
-                #     print("current_direction[Y] > 0")
-                #     print(f"Block position is {block_position}")
-                #     starting_grid = refract_block.remove_position(block_position, starting_grid)
-                #     print_matrix(starting_grid)
-                lazor_path.append(next_position1)
-                lazor_direction.append(next_direction1)
-                lazor_path.append(next_position2)
-                lazor_direction.append(next_direction2)
-            else:
-                open_block = Open_Block()
-                next_position, next_direction = open_block.interact_lazor(current_position, current_direction)
+    # Initialize the lazor grid dictionary of lazor paths and
+    # the counter for number of lazors.
+    lazor_grid_dict = {}
+    lazor_positions_dict = {}
+    laz_count = 0
+
+    for key in laz_dict:
+        lazor_start, lazor_start_direction = laz_dict[key]
+
+        # Initialize the lazor starting point and direction.
+        lazor_path = [lazor_start]
+        lazor_direction = [lazor_start_direction]
+        
+        laz_grid_key = f"lazor_grid{laz_count}"
+        lazor_grid_dict[laz_grid_key] = [
+            [0 for x in range(size[0])]
+            for y in range(size[1])
+        ]
+        lazor_positions_dict[laz_grid_key] = []
+
+        # Indicate the starting point of the lazor has been seen by the lazor.
+        lazor_grid[lazor_start[Y]][lazor_start[X]] = 1
+        lazor_grid_dict[laz_grid_key][lazor_start[Y]][lazor_start[X]] = 1
+
+        # Continue to track the lazor while options remain in its path.
+        while len(lazor_path) > 0:
+            current_position = lazor_path.pop()
+            lazor_positions.append(current_position)
+            lazor_positions_dict[laz_grid_key] += [current_position]
+            current_direction = lazor_direction.pop()
+
+            # Check to ensure the current position is still within the grid.
+            if not pos_chk((current_position[X], current_position[Y]), size):
+                continue
+
+            # Open Block: How to move when the lazor is moving through an open block.
+            if num_grid[current_position[Y]][current_position[X]] == 0:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                # Determine the next position and direction from the open block class.
+                next_position, next_direction = \
+                    empty_block.interact_lazor(current_position, current_direction)
+                # Append the next lazor position and direction to their lists.
                 lazor_path.append(next_position)
                 lazor_direction.append(next_direction)
 
-        if starting_grid[current_position[Y]][current_position[X]] == 31:
-            lazor_grid[current_position[Y]][current_position[X]] = 1
-            check_position_x = (current_position[X]+current_direction[X],current_position[Y])
-            if pos_chk(check_position_x[X], check_position_x[Y], size) and \
-            starting_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
-            starting_grid[check_position_x[Y]][check_position_x[X]] != 100:
-                refract_block = Refract_Block()
-                next_position1, next_direction1, next_position2, next_direction2 = \
-                    refract_block.interact_lazor(current_position, current_direction, 1)
-                # if current_direction[X] < 0:
-                #     block_position = (current_position[X]-1, current_position[Y])
-                #     print("current_direction[X] < 0")
-                #     print(f"Block position is {block_position}")
-                #     starting_grid = refract_block.remove_position(block_position, starting_grid)
-                #     print_matrix(starting_grid)
-                # if current_direction[X] > 0:
-                #     block_position = (current_position[X]+1, current_position[Y])
-                #     print("current_direction[X] > 0")
-                #     print(f"Block position is {block_position}")
-                #     starting_grid = refract_block.remove_position(block_position, starting_grid)
-                #     print_matrix(starting_grid)
-                lazor_path.append(next_position1)
-                lazor_direction.append(next_direction1)
-                lazor_path.append(next_position2)
-                lazor_direction.append(next_direction2)
-            else:
-                open_block = Open_Block()
-                next_position, next_direction = open_block.interact_lazor(current_position, current_direction)
+            # Reflect block (top/bottom): How to move when the lazor is moving through a 
+            # reflect block from the top/bottom.
+            if num_grid[current_position[Y]][current_position[X]] == 10:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                # Determine the next position and direction from the reflect block class.
+                next_position, next_direction = \
+                    reflect_block.interact_lazor(current_position, current_direction, 0)
+                # Append the next lazor position and direction to their lists.
                 lazor_path.append(next_position)
                 lazor_direction.append(next_direction)
 
+            # Reflect block (side): How to move when the lazor is moving through a 
+            # reflect block from the side.
+            if num_grid[current_position[Y]][current_position[X]] == 11:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                # Determine the next position and direction from the reflect block class.
+                next_position, next_direction = \
+                    reflect_block.interact_lazor(current_position, current_direction, 1)
+                # Append the next lazor position and direction to their lists.
+                lazor_path.append(next_position)
+                lazor_direction.append(next_direction)
+
+            # Opaque block: How to move when the lazor is moving through an opaque block.
+            if num_grid[current_position[Y]][current_position[X]] == 20:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+            if num_grid[current_position[Y]][current_position[X]] == 21:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+
+            # Refract Block (top/bottom): How to move when the lazor is moving through a 
+            # refract block from the top/bottom.
+            if num_grid[current_position[Y]][current_position[X]] == 30:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                # Check the next position to identify whether the lazor is inside a refract block or 
+                # entering a refract block.
+                # If inside a refract block, the next position will be a 0 and 
+                # the lazor should not refract again.
+                # If entering a refract block, the next position will not be a 0 and 
+                # the lazor should refract.
+                check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+                if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
+                num_grid[check_position_y[Y]][check_position_y[X]] != 0:
+                    # If the lazor is entering a new refract block,
+                    # Determine the next position and direction from the refract block class.
+                    next_position1, next_direction1, next_position2, next_direction2 = \
+                        refract_block.interact_lazor(current_position, current_direction, 0)
+                    # Append the next lazor positions and directions to their lists.
+                    lazor_path.append(next_position1)
+                    lazor_direction.append(next_direction1)
+                    lazor_path.append(next_position2)
+                    lazor_direction.append(next_direction2)
+                else:
+                    # If the lazor is inside the refract block,
+                    # Treat the refract block as an open block and determine the next position and 
+                    # direction from the open block class.
+                    next_position, next_direction = \
+                        empty_block.interact_lazor(current_position, current_direction)
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
+
+            # Refract Block (top/bottom): How to move when the lazor is moving through a 
+            # refract block from the top/bottom.
+            if num_grid[current_position[Y]][current_position[X]] == 31:
+                # Indicate the lazor has passed through the current position.
+                lazor_grid[current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                # Check the next position to identify whether the lazor is inside a refract block or 
+                # entering a refract block.
+                # If inside a refract block, the next position will be a 0 and 
+                # the lazor should not refract again.
+                # If entering a refract block, the next position will not be a 0 and 
+                # the lazor should refract.
+                check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+                if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
+                num_grid[check_position_x[Y]][check_position_x[X]] != 0:
+                    # If the lazor is entering a new refract block,
+                    # Determine the next position and direction from the refract block class.
+                    next_position1, next_direction1, next_position2, next_direction2 = \
+                        refract_block.interact_lazor(current_position, current_direction, 1)
+                    # Append the next lazor positions and directions to their lists.
+                    lazor_path.append(next_position1)
+                    lazor_direction.append(next_direction1)
+                    lazor_path.append(next_position2)
+                    lazor_direction.append(next_direction2)
+                else:
+                    # If the lazor is inside the refract block,
+                    # Treat the refract block as an open block and determine the next position and 
+                    # direction from the open block class.
+                    next_position, next_direction = \
+                        empty_block.interact_lazor(current_position, current_direction)
+                    lazor_path.append(next_position)
+                    lazor_direction.append(next_direction)
+        laz_count += 1
+
+    # Check the target list to identify if the targets have been hit by the lazor path.
     targets_results = []
     for i, target in enumerate(targets):
         if lazor_grid[target[Y]][target[X]] == 1:
             targets_results.append(True)
         else:
             targets_results.append(False)
-    return lazor_grid, lazor_positions, targets_results
 
-def mirror_direction(direction, side_of_block):
+    # Return the lazor grid of 0's and 1's, the lazor positions, and the results of
+    # if the targets were hit.
+    return lazor_grid, lazor_positions, lazor_positions_dict, targets_results
+
+def mirror_direction(lazor_direction, side_of_block):
     '''
     This function takes the direction of the lazor and flips it depending
-    on which side of the block it hits
+    on which side of the block it hits.
 
     **Parameters**
         direction: *tuple*
@@ -973,38 +1279,96 @@ def mirror_direction(direction, side_of_block):
         new_direction: *tuple*
             A tuple for the new direction of the lazor
     '''
+
+    # Determine a new, reflected direction for the lazor dependent on which
+    # side of the block it enters the reflect or refract block on.
     if side_of_block == 0 or side_of_block == 2:
-        new_direction = (direction[0], direction[1] * -1)
+        new_direction = (lazor_direction[0], lazor_direction[1] * -1)
     if side_of_block == 1 or side_of_block == 3:
-        new_direction = (direction[0] * -1, direction[1])
+        new_direction = (lazor_direction[0] * -1, lazor_direction[1])
+
+    # Return the new direction of the lazor.
     return new_direction
 
-def pos_chk(x_position, y_position, size):
+
+def pos_chk(position, size):
     '''
     Validate if the coordinates specified (x and y) are within the grid.
 
     **Parameters**
 
-        x: *int*
-            An x coordinate to check if it resides within the maze.
-        y: *int*
-            A y coordinate to check if it resides within the maze.
-        size: *int*
-            How many blocks wide the grid is.  Should be equivalent to
-            the length of the grid (ie. len(grid)).
+        position: *tuple* (int, int)
+            A tuple of x, y coordinates for a position.
+        size: *tuple* (int, int)
+            How many blocks wide and how many blocks in height the grid is.
+            Should be equivalent to the length of the grid and its row-lists. 
+            (ie. (len(grid[0]), len(grid))).
 
     **Returns**
 
         valid: *bool*
             Whether the coordiantes are valid (True) or not (False).
     '''
-    return x_position >= 0 and x_position < size and y_position >= 0 and y_position < size
 
-def solve_puzzle(space_positions, block_positions, start_coordinate,
+    # Return true if the position is within the grid. Return False if it is not.
+    return position[0] >= 0 and position[0] < size[0] and position[1] >= 0 and position[1] < size[1]
+
+
+def solve_puzzle(permutations_grids, laz_dict, targets):
+    '''
+   Iterates through all of the possible solution permutations until 
+   one passes through all targets to solve the puzzle.
+
+    **Parameters**
+
+        permutations_grids: *list, list, list*
+            A list of all of the possible solution permutations
+            (which themselves are lists of lists)
+        laz_dict: *dict*
+            A dictionary of all of the lazors in a puzzle with
+            their starting positions and directions as values.
+        targets: *list* of tuples
+            A list of the coordinate positions of all of the targets that
+            the lazor needs to pass through in order to solve the puzzle.
+
+    **Returns**
+
+        solution_grid: *list, list*
+            A list of lists holding the values for the grid that successfully 
+            solved the puzzle including the values for all of the blocks.
+        lazor_grid: *list, list*
+            A list of lists holding the values for the lazor grid that successfully
+            solved the puzzle including 1s for locations the lazor passed through and
+            0s for locations that it did not.
+        lazor_positions: *list*
+            A list of tuples containing the (x, y) coordinates of all of the positions
+            that any lazor has passed through.
+        lazor_positions_dict: *dict*
+            A dictionary listing all of the coordinates that each lazor individually
+            passes through.
+        targets_results: *list*
+            A list displaying whether the targets were hit by the lazors.
+    '''
+
+    # Iterate through all of the permutations until the lazor successfully solves the puzzle in one.
+    for i in permutations_grids:
+        solution_grid = []
+        lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(i, laz_dict, targets)
+        # If all targets are hit, save the solution and break the code.
+        if all(targets_results):
+            solution_grid = i
+            break
+    # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
+    # with the values for all lasers individually, and the results of the targets and whether they were hit.
+    return solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results
+
+
+def display_solution(space_positions, block_positions, start_coordinate,
                  target_coordinates, lazor_coordinates):
     '''
-    Draws the lazor
+    Draws the lazor pathway that solves the lazor puzzle.
     '''
+
     WIDTH_TEST = 300
     HEIGHT_TEST = WIDTH_TEST * 2
 
@@ -1047,7 +1411,7 @@ def print_matrix(input_list):
     for rows in input_list:
         print(rows)
 
-def permutations_blocks(filename):
+def permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block):
     '''
     returns a permutations where the blocks can be placed in a list
 
@@ -1061,9 +1425,6 @@ def permutations_blocks(filename):
         combinations: *list*
             List of permutations where the blocks can be placed
     '''
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(filename)
-    updated_grid, possible_pos = create_grid(grid_list) #update the grid to place blocks and get the list of possible positions 
-    #print(possible_pos)
     
     #finding the total number of blocks that will define the lenght of set of combinations
     num_movable_blocks = num_refl_block+num_opq_block+num_refr_block
@@ -1085,12 +1446,12 @@ def permutations_blocks(filename):
     #print(perm_list[0])
     #print(perm_list[0][0])
     permutations_grids = []
-    #print(updated_grid)
-    #new_Grid = updated_grid[:]
+    #print(num_grid)
+    #new_Grid = num_grid[:]
     for set in perm_list:
         #print(set)
         #print(range(len(set)))
-        new_Grid = copy.deepcopy(updated_grid)
+        new_Grid = copy.deepcopy(num_grid)
         #print(new_Grid)
         for pos in range(len(set)):
             #print(pos)
@@ -1109,22 +1470,22 @@ def permutations_blocks(filename):
 
         
         permutations_grids.append(new_Grid)
-        #new_Grid = copy.deepcopy(updated_grid)  
+        #new_Grid = copy.deepcopy(num_grid)  
         # print_matrix(new_Grid)
         # print("\n")
-        # print_matrix(updated_grid)
+        # print_matrix(num_grid)
         # print("\n")
         
         
     # print(permutations_grids[0])
-    print_matrix(permutations_grids[0])
-    print("\n")
-    print_matrix(permutations_grids[51])
+    # print_matrix(permutations_grids[0])
+    # print("\n")
+    # print_matrix(permutations_grids[51])
     # # print(grid_list)
     # print(num_refl_block)
     # print(num_opq_block)
     # print(num_refr_block)
-    # print(updated_grid)
+    # print(num_grid)
     return permutations_grids
 
 if __name__ == '__main__':
@@ -1139,8 +1500,6 @@ if __name__ == '__main__':
     #        0 ,0   ,0   ,0   ,0   ,10 ,0
     #        0 ,100 ,0   ,100 ,0   ,100,0
     #        0 ,0   ,0   ,0   ,0   ,0  ,0
-
-    permutations_blocks('mad_1.bff')
     
     grid_test = [
         [0 for i in range(7)]
@@ -1209,8 +1568,10 @@ if __name__ == '__main__':
 
     # ## Solve puzzle
     print(targets_test)
-    lazor_grid_results, lazor_positions_test, targets_test_results = \
-        lazor(grid_test, start_test,direction_test, targets_test)
+    test_laz_dict = {}
+    test_laz_dict['lazor1'] = [start_test, direction_test]
+    lazor_grid_results, lazor_positions_test, lazor_positions_test_dict, targets_test_results = \
+        lazor(grid_test, test_laz_dict, targets_test)
     print(targets_test_results)
     print(lazor_positions_test)
     print_matrix(lazor_grid_results)
@@ -1223,7 +1584,7 @@ if __name__ == '__main__':
 
     # ## Solve Button
     # image_button = Button(win, text="Solve Puzzle",
-    #                       command=lambda: solve_puzzle(space_positions_test,block_positions_test,
+    #                       command=lambda: display_solution(space_positions_test,block_positions_test,
     #                                                    start_test,targets_test,lazor_grid_results))
     # image_button.grid(row=0, column=1, padx=50)
     
@@ -1245,7 +1606,21 @@ if __name__ == '__main__':
     # mad_7_num_grid = create_grid(mad_7)
     # print(mad_7_num_grid)
 
-    # grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('tiny_5.bff')
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('tiny_5.bff')
+    num_grid, possible_pos = create_grid(grid_list)
+    permutations_grids = permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block)
+    print(len(permutations_grids))
+    solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results = solve_puzzle(permutations_grids, laz_dict, targets)
+    print("\n")
+    print("Start of Mitch testing")
+    print(targets)
+    print(laz_dict)
+    print_matrix(solution_grid)
+    print("\n")
+    print_matrix(lazor_grid)
+    print(targets_results)
+    print(lazor_positions)
+    print(lazor_positions_dict)
 
     # print_matrix(grid_list)
     # print(num_refl_block)

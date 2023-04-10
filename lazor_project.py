@@ -1197,7 +1197,8 @@ def lazor(num_grid, laz_dict, targets):
                 # the lazor should refract.
                 check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
-                num_grid[check_position_y[Y]][check_position_y[X]] != 0:
+                    num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+                        num_grid[check_position_y[Y]][check_position_y[X]] != 100:
                     # If the lazor is entering a new refract block,
                     # Determine the next position and direction from the refract block class.
                     next_position1, next_direction1, next_position2, next_direction2 = \
@@ -1230,7 +1231,8 @@ def lazor(num_grid, laz_dict, targets):
                 # the lazor should refract.
                 check_position_x = (current_position[X]+current_direction[X],current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
-                num_grid[check_position_x[Y]][check_position_x[X]] != 0:
+                    num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+                        num_grid[check_position_x[Y]][check_position_x[X]] != 100:
                     # If the lazor is entering a new refract block,
                     # Determine the next position and direction from the refract block class.
                     next_position1, next_direction1, next_position2, next_direction2 = \

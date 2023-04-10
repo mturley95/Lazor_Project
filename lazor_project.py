@@ -595,7 +595,7 @@ class Reflect_Block(Block):
         # Determine the new direction and position for the lazor.
         # The lazor direction reflects either vertically or horizontally dependent on the direction that 
         # it entered the block from and the lazor poistion advances by one space in the new direction.
-        new_direction = mirror_direction(lazor_direction, side_of_block)
+        new_direction = self.mirror_direction(lazor_direction, side_of_block)
         new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
         
@@ -752,7 +752,7 @@ class Refract_Block(Block):
 
         # The lazor direction reflects either vertically or horizontally dependent on the direction that 
         # it entered the block from and the lazor poistion advances by one space in the new direction.
-        new_direction_reflect = mirror_direction(lazor_direction, side_of_block)
+        new_direction_reflect = self.mirror_direction(lazor_direction, side_of_block)
         new_position_reflect = (lazor_position[0] + new_direction_reflect[0],
                                 lazor_position[1] + new_direction_reflect[1])
 
@@ -1328,34 +1328,6 @@ def lazor(num_grid, laz_dict, targets):
     # if the targets were hit.
     return lazor_grid, lazor_positions, lazor_positions_dict, targets_results
 
-def mirror_direction(lazor_direction, side_of_block):
-    '''
-    This function takes the direction of the lazor and flips it depending
-    on which side of the block it hits.
-
-    **Parameters**
-        direction: *tuple*
-            A tuple to hold the two vectors for the direction of the lazor
-        side of block: *int*
-            An integer denoting the side of the block
-                0 = top/bottom
-                1 = left/right
-
-    **Returns**
-        new_direction: *tuple*
-            A tuple for the new direction of the lazor
-    '''
-
-    # Determine a new, reflected direction for the lazor dependent on which
-    # side of the block it enters the reflect or refract block on.
-    if side_of_block == 0 or side_of_block == 2:
-        new_direction = (lazor_direction[0], lazor_direction[1] * -1)
-    if side_of_block == 1 or side_of_block == 3:
-        new_direction = (lazor_direction[0] * -1, lazor_direction[1])
-
-    # Return the new direction of the lazor.
-    return new_direction
-
 
 def pos_chk(position, size):
     '''
@@ -1378,62 +1350,6 @@ def pos_chk(position, size):
 
     # Return true if the position is within the grid. Return False if it is not.
     return position[0] >= 0 and position[0] < size[0] and position[1] >= 0 and position[1] < size[1]
-
-
-def solve_puzzle(permutations_grids, laz_dict, targets):
-    '''
-   Iterates through all of the possible solution permutations until 
-   one passes through all targets to solve the puzzle.
-
-    **Parameters**
-
-        permutations_grids: *list, list, list*
-            A list of all of the possible solution permutations
-            (which themselves are lists of lists)
-        laz_dict: *dict*
-            A dictionary of all of the lazors in a puzzle with
-            their starting positions and directions as values.
-        targets: *list* of tuples
-            A list of the coordinate positions of all of the targets that
-            the lazor needs to pass through in order to solve the puzzle.
-
-    **Returns**
-
-        solution_grid: *list, list*
-            A list of lists holding the values for the grid that successfully 
-            solved the puzzle including the values for all of the blocks.
-        lazor_grid: *list, list*
-            A list of lists holding the values for the lazor grid that successfully
-            solved the puzzle including 1s for locations the lazor passed through and
-            0s for locations that it did not.
-        lazor_positions: *list*
-            A list of tuples containing the (x, y) coordinates of all of the positions
-            that any lazor has passed through.
-        lazor_positions_dict: *dict*
-            A dictionary listing all of the coordinates that each lazor individually
-            passes through.
-        targets_results: *list*
-            A list displaying whether the targets were hit by the lazors.
-    '''
-
-    # Iterate through all of the permutations until the lazor successfully solves the puzzle in one.
-    solution_grid = []
-    lazor_grid = []
-    lazor_positions = []
-    lazor_positions_dict = {}
-    targets_results = []
-    for i in permutations_grids:
-        
-        lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(i, laz_dict, targets)
-        # If all targets are hit, save the solution and break the code.
-        if all(targets_results):
-            solution_grid = i
-            break
-    if solution_grid == []:
-        print("No Solution Found")
-    # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
-    # with the values for all lasers individually, and the results of the targets and whether they were hit.
-    return solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results
 
 
 def display_solution(blocks_dict, start_coordinate,
@@ -1484,24 +1400,49 @@ def print_matrix(input_list):
     for rows in input_list:
         print(rows)
 
-def permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block,laz_dict, targets):
+def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets):
     '''
-    returns a permutations where the blocks can be placed in a list
+    Iterates through all of the possible solution permutations until 
+    one passes through all targets to solve the puzzle.
 
-    **Parameters**
-
-        filename: *str*
-            The file name of that from where we get the combinations
-         
+    **Parameters** 
+        num_grid: *list, list*
+            The starting grid for the lazor puzzle before any blocks are placed.
+        possible_pos: *list* of tuples
+            All of the possible positions that blocks can be placed.
+        num_refl_block: *int*
+            The number of reflect blocks that can be used to solve a puzzle.
+        num_opq_block: *int*
+            The number of opaque blocks that can be used to solve a puzzle.
+        num_refr_block: *int*
+        laz_dict: *dict*
+            A dictionary of all of the lazors in a puzzle with
+            their starting positions and directions as values.
+        targets: *list* of tuples
+            A list of the coordinate positions of all of the targets that
+            the lazor needs to pass through in order to solve the puzzle.
 
     **Returns**
-        combinations: *list*
-            List of permutations where the blocks can be placed
+        solution_grid: *list, list*
+            A list of lists holding the values for the grid that successfully 
+            solved the puzzle including the values for all of the blocks.
+        lazor_grid: *list, list*
+            A list of lists holding the values for the lazor grid that successfully
+            solved the puzzle including 1s for locations the lazor passed through and
+            0s for locations that it did not.
+        lazor_positions: *list*
+            A list of tuples containing the (x, y) coordinates of all of the positions
+            that any lazor has passed through.
+        lazor_positions_dict: *dict*
+            A dictionary listing all of the coordinates that each lazor individually
+            passes through.
+        targets_results: *list*
+            A list displaying whether the targets were hit by the lazors.
     '''
-    
-    #finding the total number of blocks that will define the lenght of set of combinations
-    num_movable_blocks = num_refl_block+num_opq_block+num_refr_block
-    # converting the movable blocks into a list of values to be use in the for loop later
+
+    # Finding the total number of blocks that will define the lenght of set of combinations
+    num_movable_blocks = num_refl_block + num_opq_block + num_refr_block
+    # Converting the movable blocks into a list of values to be use in the for loop later
     movable_blocks = []
     for i in range(num_refl_block):
         movable_blocks.append(1)
@@ -1509,72 +1450,59 @@ def permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, n
         movable_blocks.append(2)
     for i in range(num_refr_block):
         movable_blocks.append(3)
-    
-    #print(movable_blocks)
-    #Creating the permutations of postiitons where blocks can be placed
-    position_perm = itertools.permutations(possible_pos,num_movable_blocks)
-    perm_list = list(position_perm)
-    #print(perm_list)
-    #print(len(perm_list))
-    #print(perm_list[0])
-    #print(perm_list[0][0])
-    # permutations_grids = []
 
+    # Check to see if all blocks are the same for a given puzzle.
+    if all(ele == movable_blocks[0] for ele in movable_blocks):
+         # Create all of the possible combinations of positions where blocks can be placed.
+        position_perm = itertools.combinations(possible_pos, num_movable_blocks)
+        
+    else:       
+        # Create all of the possible permutations of positions where blocks can be placed.
+        position_perm = itertools.permutations(possible_pos, num_movable_blocks)
+    
+    perm_list = list(position_perm)
+
+    # Iterate through all of the permutations until the lazor successfully solves the puzzle in one.
     solution_grid = []
     lazor_grid = []
     lazor_positions = []
     lazor_positions_dict = {}
     targets_results = []
-    count = 0
-    #print(num_grid)
-    #new_Grid = num_grid[:]
-    for set in perm_list:
-        #print(set)
-        #print(range(len(set)))
-        new_Grid = copy.deepcopy(num_grid)
-        #print(new_Grid)
-        for pos in range(len(set)):
-            #print(pos)
-            #print(set[pos])
-            #print(new_Grid)
-            if movable_blocks[pos] == 1:
-                reflect_blk = Reflect_Block()
-                reflect_blk.set_position(set[pos], new_Grid)
-            if movable_blocks[pos] == 2:
-                opaque_blk = Opaque_Block()
-                opaque_blk.set_position(set[pos], new_Grid)
-            if movable_blocks[pos] == 3:
-                refract_blk = Refract_Block()
-                refract_blk.set_position(set[pos], new_Grid)
-            #print(range(len(pos)))
 
-        ## Add solve function here
-        count += 1
-        lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(new_Grid, laz_dict, targets)
+    for set in perm_list:
+        
+        # Make a copy of the original grid that can be updated.
+        new_grid = copy.deepcopy(num_grid)
+        
+        # Iterate through all positions in a permutation set and place the blocks.       
+        reflect_blk = Reflect_Block()
+        opaque_blk = Opaque_Block()
+        refract_blk = Refract_Block()
+
+        for pos in range(len(set)):
+
+            if movable_blocks[pos] == 1:
+                reflect_blk.set_position(set[pos], new_grid)
+            if movable_blocks[pos] == 2:
+                opaque_blk.set_position(set[pos], new_grid)
+            if movable_blocks[pos] == 3:
+                refract_blk.set_position(set[pos], new_grid)
+
+        # Run the lazor through the solutions attempt.
+        lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(new_grid, laz_dict, targets)
+        # If all targets are hit, save the solution and break the code.
         if all(targets_results):
-            solution_grid = new_Grid
+            solution_grid = new_grid
             break
+
+    # Output if no possible solutions can be found.
     if solution_grid == []:
-        print("No Solution Found")
-        #permutations_grids.append(new_Grid)
-        #new_Grid = copy.deepcopy(num_grid)  
-        # print_matrix(new_Grid)
-        # print("\n")
-        # print_matrix(num_grid)
-        # print("\n")
-        
-        
-    # print(permutations_grids[0])
-    # print_matrix(permutations_grids[0])
-    # print("\n")
-    # print_matrix(permutations_grids[51])
-    # # print(grid_list)
-    # print(num_refl_block)
-    # print(num_opq_block)
-    # print(num_refr_block)
-    # print(num_grid)
-    print(count)
+        print("No Solution Found") 
+    
+    # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
+    # with the values for all lasers individually, and the results of the targets and whether they were hit.
     return solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results
+
 
 if __name__ == '__main__':
     # Reflect block = 1
@@ -1675,24 +1603,22 @@ if __name__ == '__main__':
                                                        start_test,targets_test,lazor_positions_test))
     image_button.grid(row=0, column=1, padx=50)
 
-    win.mainloop()
+    # win.mainloop()
 
     ### Correct Solution try
-    # grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('mad_4.bff')
-    # print("opened file")
-    # num_grid, possible_pos = create_grid(grid_list)
-    # print("created grid")
-    # solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results = permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets)
-    # # print(len(permutations_grids))
-    # # solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results = solve_puzzle(permutations_grids, laz_dict, targets)
-    # print("\n")
-    # print("Start of Mitch testing")
-    # print(targets)
-    # print(laz_dict)
-    # print_matrix(solution_grid)
-    # print("\n")
-    # print_matrix(lazor_grid)
-    # print(targets_results)
-    # print(lazor_positions)
-    # print(lazor_positions_dict)
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('mad_7.bff')
+    print("opened file")
+    num_grid, possible_pos = create_grid(grid_list)
+    print("created grid")
+    solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results = solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets)
+    print("\n")
+    print("Start of Mitch testing")
+    print(targets)
+    print(laz_dict)
+    print_matrix(solution_grid)
+    print("\n")
+    print_matrix(lazor_grid)
+    print(targets_results)
+    print(lazor_positions)
+    print(lazor_positions_dict)
 

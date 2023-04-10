@@ -1197,7 +1197,8 @@ def lazor(num_grid, laz_dict, targets):
                 # the lazor should refract.
                 check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
-                num_grid[check_position_y[Y]][check_position_y[X]] != 0:
+                num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+                num_grid[check_position_y[Y]][check_position_y[X]] != 100:
                     # If the lazor is entering a new refract block,
                     # Determine the next position and direction from the refract block class.
                     next_position1, next_direction1, next_position2, next_direction2 = \
@@ -1230,7 +1231,8 @@ def lazor(num_grid, laz_dict, targets):
                 # the lazor should refract.
                 check_position_x = (current_position[X]+current_direction[X],current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
-                num_grid[check_position_x[Y]][check_position_x[X]] != 0:
+                num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+                num_grid[check_position_x[Y]][check_position_x[X]] != 100:
                     # If the lazor is entering a new refract block,
                     # Determine the next position and direction from the refract block class.
                     next_position1, next_direction1, next_position2, next_direction2 = \
@@ -1571,19 +1573,19 @@ if __name__ == '__main__':
     #               WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
 
     # ## Solve puzzle
-    print(targets_test)
-    test_laz_dict = {}
-    test_laz_dict['lazor1'] = [start_test, direction_test]
-    lazor_grid_results, lazor_positions_test, lazor_positions_test_dict, targets_test_results = \
-        lazor(grid_test, test_laz_dict, targets_test)
-    print(targets_test_results)
-    print(lazor_positions_test)
-    print_matrix(lazor_grid_results)
+    # print(targets_test)
+    # test_laz_dict = {}
+    # test_laz_dict['lazor1'] = [start_test, direction_test]
+    # lazor_grid_results, lazor_positions_test, lazor_positions_test_dict, targets_test_results = \
+    #     lazor(grid_test, test_laz_dict, targets_test)
+    # print(targets_test_results)
+    # print(lazor_positions_test)
+    # print_matrix(lazor_grid_results)
 
-    draw_lazor(image_start, lazor_positions_test,
-               WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
+    # draw_lazor(image_start, lazor_positions_test,
+    #            WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
     
-    win.mainloop()
+    # win.mainloop()
     # block_positions_test = [3,7]
 
     # ## Solve Button
@@ -1610,7 +1612,7 @@ if __name__ == '__main__':
     # mad_7_num_grid = create_grid(mad_7)
     # print(mad_7_num_grid)
 
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('test.bff')
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('dark_1.bff')
     num_grid, possible_pos = create_grid(grid_list)
     permutations_grids = permutations_blocks(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block)
     print(len(permutations_grids))

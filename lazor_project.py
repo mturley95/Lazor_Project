@@ -16,6 +16,7 @@ from PIL import Image
 from PIL import ImageGrab
 import time
 import os
+import tkcap
 
 # Global Variables
 X = 0
@@ -1630,14 +1631,12 @@ def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diam
 
     # Iterate through each lazor in the dictionary
     for key in lazor_position_dict:
-        print(lazor_position_dict[key])
         # Loop through each coordinate the lazor traveled to
         for i, coordinate in enumerate(lazor_position_dict[key]):
             try:
                 # Check if the position before the block is more than one block away
                 if lazor_position_dict[key][i+1][0] - coordinate[0] > 1 or lazor_position_dict[key][i+1][0] - coordinate[0] < -1:
                     if lazor_position_dict[key][i+1][1] - coordinate[1] > 1 or lazor_position_dict[key][i+1][1] - coordinate[1] < -1:
-                        print(coordinate)
                         # Initialize the count
                         count = 0
                         # Loop through to find the closest block to this position
@@ -1653,11 +1652,9 @@ def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diam
                             count += 1
                         # Replace the value of the position before with this value
                         lazor_position_dict[key][count-1] = value
-                        print(lazor_position_dict[key])
             except:
                 pass
-        # Loop through all the coordinates in the position list
-        # for i, coordinate in enumerate(lazor_position_dict[key]):
+
             try:
                 # Make sure doesn't index backwards
                 if i-1 < 0:
@@ -1772,7 +1769,6 @@ def display_solution(level_title):
                WIDTH, MATRIX_SIZE_X, DIAMETER)
 
     # Save the solution to a .PNG file.
-    time.sleep(1)
     screenshot_window(level_title)
 
 
@@ -1787,47 +1783,13 @@ def screenshot_window(level_title):
     **Returns**
         None
     '''
-
     # Save the base name without the file type handle as base_name.
     base_name = os.path.splitext(level_title)[0]
 
-    # print(level_title)
-    # filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
-
-    # Attempt #1
-    # # Take a screenshot of the current window.
-    # screenshot = ImageGrab.grab()
-    # # Save the screenshot to the current directory.
-    # screenshot.save(base_name + ".png", format="PNG")
-
-    # # Attempt #2
-    # # Get the ID of the active window
-    # window_id = os.popen("xdotool getactivewindow").read().strip()
-
-    # # Capture a screenshot of the window using scrot
-    # os.system(f"scrot -u -o {window_id}.png")
-
-    # screenshot = Image.open(f"{window_id}.png")
-
-    # screenshot.save(base_name + ".png", format="PNG")
-
-    # # Delete the temporary file
-    # os.remove(f"{window_id}.png")
-
-    # Attempt #3
-    time.sleep(1)
-    # Get the position and size of the window
-    x = win.winfo_x()
-    y = win.winfo_y()
-    width = win.winfo_width()
-    height = win.winfo_height()
-
-    # Take screenshot
-    screenshot = ImageGrab.grab(bbox=(x, y, x+width, y+height))
-    screenshot.save(base_name + ".png", format="PNG")
-
-    # win.deiconify()
-
+    # Create an instance of tkcap to image capture
+    cap = tkcap.CAP(win)
+    # Capture the image with the name of the level
+    cap.capture(base_name + ".png")
 
 if __name__ == '__main__':
     # The start of the level
@@ -1868,9 +1830,6 @@ if __name__ == '__main__':
                                  command=lambda: display_solution(level_selection_text.get()))
     # Place button on the window
     solve_puzzle_button.grid(row=1, column=1, padx=50)
-
-    # Screenshot the window
-    # screenshot_window(level_selection_text.get())
-
+    
     # Show the window
     win.mainloop()

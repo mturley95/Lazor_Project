@@ -11,10 +11,6 @@ outputs what the solution would be for each specific level.
 from tkinter import *
 import itertools
 import copy
-import pyautogui as pg
-from PIL import Image
-from PIL import ImageGrab
-import time
 import os
 import tkcap
 
@@ -1789,7 +1785,7 @@ def screenshot_window(level_title):
     # Create an instance of tkcap to image capture
     cap = tkcap.CAP(win)
     # Capture the image with the name of the level
-    cap.capture(base_name + ".png")
+    cap.capture(base_name + ".png", overwrite=True)
 
 if __name__ == '__main__':
     # The start of the level
@@ -1830,6 +1826,6 @@ if __name__ == '__main__':
                                  command=lambda: display_solution(level_selection_text.get()))
     # Place button on the window
     solve_puzzle_button.grid(row=1, column=1, padx=50)
-    
+
     # Show the window
     win.mainloop()

@@ -12,7 +12,8 @@ from tkinter import *
 import itertools
 import copy
 import pyautogui as pg
-from PIL import Image
+import PIL.ImageGrab as ImageGrab
+import os
 
 # Global Variables
 X = 0
@@ -1768,13 +1769,33 @@ def display_solution(level_title):
     draw_lazor(image_solution, laz_dict, lazor_positions_dict,
                WIDTH, MATRIX_SIZE_X, DIAMETER)
 
+    # Save the solution to a .PNG file.
+    screenshot_window(level_title)
+
 
 def screenshot_window(level_title):
-    level_title = level_title - ".bff"
-    print(level_title)
+    '''
+    Reads in a file name and saves the solved state image of the level as a PNG.
+
+    **Parameters** 
+        level_title: *str*
+            The name of the level you want to play.
+
+    **Returns**
+        None
+    '''
+
+    # Save the base name without the file type handle as base_name.
+    base_name = os.path.splitext(level_title)[0]
+
+    # print(level_title)
     # filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
-    screenshot = pg.screenshot()
-    screenshot.save("level_title", format="PNG")
+
+    # Take a screenshot of the current window.
+    screenshot = ImageGrab.grab()
+    # Save the screenshot to the current directory.
+    screenshot.save(base_name + ".png", format="PNG")
+
     # win.deiconify()
 
 
@@ -1804,7 +1825,7 @@ if __name__ == '__main__':
     image_solution = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
     image_solution.grid(row=1, column=2)
 
-    # Showw Level Button
+    # Show Level Button
     # Initialize button to display level
     display_level_button = Button(win, text="Display Level",
                                   command=lambda: display_level(level_selection_text.get()))
@@ -1819,7 +1840,7 @@ if __name__ == '__main__':
     solve_puzzle_button.grid(row=1, column=1, padx=50)
 
     # Screenshot the window
-    screenshot_window(level_selection_text.get())
+    # screenshot_window(level_selection_text.get())
 
     # Show the window
     win.mainloop()

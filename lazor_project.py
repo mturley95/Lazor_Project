@@ -12,7 +12,7 @@ from tkinter import *
 import itertools
 import copy
 import pyautogui as pg
-import PIL.ImageGrab as ImageGrab
+from PIL import Image
 import os
 
 # Global Variables
@@ -1791,10 +1791,23 @@ def screenshot_window(level_title):
     # print(level_title)
     # filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
 
-    # Take a screenshot of the current window.
-    screenshot = ImageGrab.grab()
-    # Save the screenshot to the current directory.
+    # # Take a screenshot of the current window.
+    # screenshot = ImageGrab.grab()
+    # # Save the screenshot to the current directory.
+    # screenshot.save(base_name + ".png", format="PNG")
+
+    # Get the ID of the active window
+    window_id = os.popen("xdotool getactivewindow").read().strip()
+
+    # Capture a screenshot of the window using scrot
+    os.system(f"scrot -u -o {window_id}.png")
+
+    screenshot = Image.open(f"{window_id}.png")
+
     screenshot.save(base_name + ".png", format="PNG")
+
+    # Delete the temporary file
+    os.remove(f"{window_id}.png")
 
     # win.deiconify()
 

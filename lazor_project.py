@@ -11,6 +11,7 @@ outputs what the solution would be for each specific level.
 from tkinter import *
 import itertools
 import copy
+import pyautogui as pg
 
 # Global Variables
 X = 0
@@ -1700,6 +1701,14 @@ def display_solution(level_title):
     draw_lazor(image_solution, laz_dict, lazor_positions_dict,
                WIDTH, MATRIX_SIZE_X, DIAMETER)
 
+def screenshot_window(level_title):
+    level_title = level_title - ".bff"
+    print(level_title)
+    filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
+    screenshot = pg.screenshot()
+    screenshot.save(filename)
+    # win.deiconify()
+
 if __name__ == '__main__':
     ## The start of the level
     # Initialize window
@@ -1738,6 +1747,9 @@ if __name__ == '__main__':
                           command=lambda: display_solution(level_selection_text.get()))
     # Place button on the window
     solve_puzzle_button.grid(row=1, column=1, padx=50)
+
+    # Screenshot the window
+    screenshot_window(level_selection_text.get())
 
     # Show the window
     win.mainloop()

@@ -12,12 +12,15 @@ from tkinter import *
 import itertools
 import copy
 import pyautogui as pg
+from PIL import Image
 
 # Global Variables
 X = 0
 Y = 1
 
-## Block Creation
+# Block Creation
+
+
 class Block:
     '''
     This class is used to create block objects to populate the grid with. They will interact
@@ -51,7 +54,7 @@ class Block:
             This function calculates the new position and direction of the lazor based on how the block
             interacts with the lazor.
             Return new_position, new_direction: *tuple*, *tuple*
-        
+
     **Sub-Classes**
         Open_Block:
             Creates blocks that are empty and open for other blocks to be placed in their positions.
@@ -139,14 +142,14 @@ class Block:
         # Add the new position to the block's list of positions.
         self.positions.append(new_position)
 
-        # Modify the original grid by adding the block's 
+        # Modify the original grid by adding the block's
         # unique grid of numbers to the position specified.
         grid_edit = self.grid
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
                 # Only overwrites the grid numbers for open spaces.
                 if num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 0 or \
-                    num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 100:
+                        num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 100:
                     num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                         grid_edit[y_index][x_index]
 
@@ -192,15 +195,17 @@ class Block:
 
                 # Check above the block being removed.
                 if y_index-1 == -1 and x_index-1 == 0:
-                    
+
                     # Identify adjacent block type and position.
-                    adj_block = num_grid[remove_position[Y]+y_index-2][remove_position[X]+x_index-1]
-                    adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-2)
+                    adj_block = num_grid[remove_position[Y] +
+                                         y_index-2][remove_position[X]+x_index-1]
+                    adj_block_pos = (
+                        remove_position[X]+x_index-1, remove_position[Y]+y_index-2)
 
                     # Check to ensure adjacent block is on the grid.
                     if not pos_chk(adj_block_pos, size):
                         continue
-                    
+
                     # Check adjacent block type and replace value to removed space.
                     if adj_block == 100:
                         empty_block = Open_Block()
@@ -220,11 +225,13 @@ class Block:
 
                 # Check to the left of the block being removed.
                 if y_index-1 == 0 and x_index-1 == -1:
-                    
-                    # Identify adjacent block type and position.                    
-                    adj_block = num_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-2]
-                    adj_block_pos = (remove_position[X]+x_index-2, remove_position[Y]+y_index-1)
-                    
+
+                    # Identify adjacent block type and position.
+                    adj_block = num_grid[remove_position[Y] +
+                                         y_index-1][remove_position[X]+x_index-2]
+                    adj_block_pos = (
+                        remove_position[X]+x_index-2, remove_position[Y]+y_index-1)
+
                     # Check to ensure adjacent block is on the grid.
                     if not pos_chk(adj_block_pos, size):
                         continue
@@ -248,11 +255,13 @@ class Block:
 
                 # Check to the right of the block being removed.
                 if y_index-1 == 0 and x_index-1 == 1:
-                    
-                    # Identify adjacent block type and position.                      
-                    adj_block = num_grid[remove_position[Y]+y_index-1][remove_position[X]+x_index-0]
-                    adj_block_pos = (remove_position[X]+x_index-0, remove_position[Y]+y_index-1)             
-                    
+
+                    # Identify adjacent block type and position.
+                    adj_block = num_grid[remove_position[Y] +
+                                         y_index-1][remove_position[X]+x_index-0]
+                    adj_block_pos = (
+                        remove_position[X]+x_index-0, remove_position[Y]+y_index-1)
+
                     # Check to ensure adjacent block is on the grid.
                     if not pos_chk(adj_block_pos, size):
                         continue
@@ -278,8 +287,10 @@ class Block:
                 if y_index-1 == 1 and x_index-1 == 0:
 
                     # Identify adjacent block type and position.
-                    adj_block = num_grid[remove_position[Y]+y_index-0][remove_position[X]+x_index-1]
-                    adj_block_pos = (remove_position[X]+x_index-1, remove_position[Y]+y_index-0)
+                    adj_block = num_grid[remove_position[Y] +
+                                         y_index-0][remove_position[X]+x_index-1]
+                    adj_block_pos = (
+                        remove_position[X]+x_index-1, remove_position[Y]+y_index-0)
 
                     # Check to ensure adjacent block is on the grid.
                     if not pos_chk(adj_block_pos, size):
@@ -304,7 +315,6 @@ class Block:
 
         # Return the new grid with modified values.
         return num_grid
-    
 
     def mirror_direction(self, lazor_direction, side_of_block):
         '''
@@ -334,7 +344,6 @@ class Block:
         # Return the new direction of the lazor.
         return new_direction
 
-
     def interact_lazor(self, lazor_position, lazor_direction):
         '''
         This function calculates the new position and direcetion based on how the block
@@ -363,9 +372,10 @@ class Block:
         new_direction = (lazor_direction[0], lazor_direction[1])
         new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
-        
+
         # Return the lazor's new position and direction.
         return new_position, new_direction
+
 
 class Open_Block(Block):
     '''
@@ -407,6 +417,7 @@ class Open_Block(Block):
         ]
         open_grid[1][1] = 100
         self.grid = open_grid
+
 
 class Reflect_Block(Block):
     '''
@@ -453,7 +464,6 @@ class Reflect_Block(Block):
         reflect_grid[1][1] = 1
         self.grid = reflect_grid
 
-
     def set_position(self, new_position, num_grid):
         '''
         This function takes the desired position of the block and adds the values of this block into the grid. 
@@ -480,10 +490,9 @@ class Reflect_Block(Block):
             for x_index in range(len(grid_edit[y_index])):
                 num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
-                
+
         # Return the new grid with the modified block values.
         return num_grid
-
 
     def interact_lazor(self, lazor_position, lazor_direction, side_of_block):
         '''
@@ -508,14 +517,15 @@ class Reflect_Block(Block):
         '''
 
         # Determine the new direction and position for the lazor.
-        # The lazor direction reflects either vertically or horizontally dependent on the direction that 
+        # The lazor direction reflects either vertically or horizontally dependent on the direction that
         # it entered the block from and the lazor poistion advances by one space in the new direction.
         new_direction = self.mirror_direction(lazor_direction, side_of_block)
         new_position = (lazor_position[0] + new_direction[0],
                         lazor_position[1] + new_direction[1])
-        
+
         # Return the lazor's new position and direction.
         return new_position, new_direction
+
 
 class Opaque_Block(Block):
     '''
@@ -562,7 +572,6 @@ class Opaque_Block(Block):
         opaque_grid[1][1] = 2
         self.grid = opaque_grid
 
-
     def set_position(self, new_position, num_grid):
         '''
         This function takes the desired position of the block and adds the values of this block into the grid. 
@@ -589,10 +598,9 @@ class Opaque_Block(Block):
             for x_index in range(len(grid_edit[y_index])):
                 num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                     grid_edit[y_index][x_index]
-                
+
         # Return the new grid with the modified block values.
         return num_grid
-
 
     def interact_lazor(self, lazor_position, lazor_direction):
 
@@ -604,6 +612,7 @@ class Opaque_Block(Block):
 
         # Return the lazor's new position and direction.
         return new_position, new_direction
+
 
 class Refract_Block(Block):
     '''
@@ -650,11 +659,10 @@ class Refract_Block(Block):
         refract_grid[1][1] = 3
         self.grid = refract_grid
 
-
     def interact_lazor(self, lazor_position, lazor_direction, side_of_block):
-        
-        # Determine the new direction and position for the lazor. For the refract block, 
-        # two lazor pathway will be created: one that passes the lazor through and 
+
+        # Determine the new direction and position for the lazor. For the refract block,
+        # two lazor pathway will be created: one that passes the lazor through and
         # one that reflects the lazor.
 
         # There is no change in lazor direction for empty block path,
@@ -663,16 +671,19 @@ class Refract_Block(Block):
         new_position_empty = (lazor_position[0] + lazor_direction[0],
                               lazor_position[1] + lazor_direction[1])
 
-        # The lazor direction reflects either vertically or horizontally dependent on the direction that 
+        # The lazor direction reflects either vertically or horizontally dependent on the direction that
         # it entered the block from and the lazor poistion advances by one space in the new direction.
-        new_direction_reflect = self.mirror_direction(lazor_direction, side_of_block)
+        new_direction_reflect = self.mirror_direction(
+            lazor_direction, side_of_block)
         new_position_reflect = (lazor_position[0] + new_direction_reflect[0],
                                 lazor_position[1] + new_direction_reflect[1])
 
         # Return the lazor's two new positions and directions.
         return new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect
 
-## Solving Functions
+# Solving Functions
+
+
 def openlazorfile(filename):
     '''
     This will open the bff file and output the components on the board.
@@ -767,6 +778,7 @@ def openlazorfile(filename):
     # Return variables
     return grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets
 
+
 def create_grid(grid_list):
     '''
     This function takes in the grid list from the inital open file function that contains only letters
@@ -808,7 +820,7 @@ def create_grid(grid_list):
                    'refract': [],
                    'opaque': []}
     block_location_value = 0
-    # Iterate through the letter grid to identify block types for each position and place blocks 
+    # Iterate through the letter grid to identify block types for each position and place blocks
     # of the correct type into the number grid as each position is determined.
     for line in grid_list:
         for block in line:
@@ -847,11 +859,12 @@ def create_grid(grid_list):
         # Reset the x_count to 1 as the next line is started.
         x_count = 1
         y_count += 2
-    
+
     # Identify all of the empty block positions that can be replaced by others in the future.
     possible_pos = empty_block.get_positions()
     # Return the new grid of numbers that was generated and the list of positions that can be manipulated.
     return new_grid, possible_pos, blocks_dict
+
 
 def lazor(num_grid, laz_dict, targets):
     '''
@@ -947,28 +960,33 @@ def lazor(num_grid, laz_dict, targets):
             if num_grid[current_position[Y]][current_position[X]] == 0:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]
+                                              ][current_position[X]] = 1
                 # Determine the next position and direction from the open block class.
                 next_position, next_direction = \
-                    empty_block.interact_lazor(current_position, current_direction)
+                    empty_block.interact_lazor(
+                        current_position, current_direction)
                 # Append the next lazor position and direction to their lists.
                 lazor_path.append(next_position)
                 lazor_direction.append(next_direction)
 
-            # Reflect block (top/bottom): How to move when the lazor is moving through a 
+            # Reflect block (top/bottom): How to move when the lazor is moving through a
             # reflect block from the top/bottom.
             if num_grid[current_position[Y]][current_position[X]] == 10:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]
+                                              ][current_position[X]] = 1
 
-                check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+                check_position_y = (
+                    current_position[X], current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
-                num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
-                num_grid[check_position_y[Y]][check_position_y[X]] != 100:
+                        num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+                        num_grid[check_position_y[Y]][check_position_y[X]] != 100:
                     # Determine the next position and direction from the reflect block class.
                     next_position, next_direction = \
-                        reflect_block.interact_lazor(current_position, current_direction, 0)
+                        reflect_block.interact_lazor(
+                            current_position, current_direction, 0)
                     # Append the next lazor position and direction to their lists.
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
@@ -977,25 +995,29 @@ def lazor(num_grid, laz_dict, targets):
                     # Treat the reflect block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
-                        empty_block.interact_lazor(current_position, current_direction)
+                        empty_block.interact_lazor(
+                            current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
-            # Reflect block (side): How to move when the lazor is moving through a 
+            # Reflect block (side): How to move when the lazor is moving through a
             # reflect block from the side.
             if num_grid[current_position[Y]][current_position[X]] == 11:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]
+                                              ][current_position[X]] = 1
 
                 # Check the position in front of the lazors in the x direction for a block
-                check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+                check_position_x = (
+                    current_position[X]+current_direction[X], current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
-                num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
-                num_grid[check_position_x[Y]][check_position_x[X]] != 100:
+                        num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+                        num_grid[check_position_x[Y]][check_position_x[X]] != 100:
                     # Determine the next position and direction from the reflect block class.
                     next_position, next_direction = \
-                        reflect_block.interact_lazor(current_position, current_direction, 1)
+                        reflect_block.interact_lazor(
+                            current_position, current_direction, 1)
                     # Append the next lazor position and direction to their lists.
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
@@ -1004,44 +1026,51 @@ def lazor(num_grid, laz_dict, targets):
                     # Treat the reflect block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
-                        empty_block.interact_lazor(current_position, current_direction)
+                        empty_block.interact_lazor(
+                            current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
             # Opaque block: How to move when the lazor is moving through an opaque block.
             if num_grid[current_position[Y]][current_position[X]] == 20:
                 # Check the position in front of the lazors in the y direction for a block
-                check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+                check_position_y = (
+                    current_position[X], current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
-                num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
-                num_grid[check_position_y[Y]][check_position_y[X]] != 100:
+                        num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
+                        num_grid[check_position_y[Y]][check_position_y[X]] != 100:
                     # Indicate the lazor has passed through the current position.
                     lazor_grid[current_position[Y]][current_position[X]] = 1
-                    lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                    lazor_grid_dict[laz_grid_key][current_position[Y]
+                                                  ][current_position[X]] = 1
                 else:
                     # If the lazor is inside the refract block,
                     # Treat the refract block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
-                        empty_block.interact_lazor(current_position, current_direction)
+                        empty_block.interact_lazor(
+                            current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
             if num_grid[current_position[Y]][current_position[X]] == 21:
                 # Check the position in front of the lazors in the x direction for a block
-                check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+                check_position_x = (
+                    current_position[X]+current_direction[X], current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
-                num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
-                num_grid[check_position_x[Y]][check_position_x[X]] != 100:
+                        num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
+                        num_grid[check_position_x[Y]][check_position_x[X]] != 100:
                     # Indicate the lazor has passed through the current position.
                     lazor_grid[current_position[Y]][current_position[X]] = 1
-                    lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                    lazor_grid_dict[laz_grid_key][current_position[Y]
+                                                  ][current_position[X]] = 1
                 else:
                     # If the lazor is inside the refract block,
                     # Treat the refract block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
-                        empty_block.interact_lazor(current_position, current_direction)
+                        empty_block.interact_lazor(
+                            current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
@@ -1050,21 +1079,24 @@ def lazor(num_grid, laz_dict, targets):
             if num_grid[current_position[Y]][current_position[X]] == 30:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]
+                                              ][current_position[X]] = 1
                 # Check the next position to identify whether the lazor is inside a refract block or
                 # entering a refract block.
                 # If inside a refract block, the next position will be a 0 and
                 # the lazor should not refract again.
                 # If entering a refract block, the next position will not be a 0 and
                 # the lazor should refract.
-                check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
+                check_position_y = (
+                    current_position[X], current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
                     num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
                         num_grid[check_position_y[Y]][check_position_y[X]] != 100:
                     # If the lazor is entering a new refract block,
                     # Determine the next position and direction from the refract block class.
                     next_position1, next_direction1, next_position2, next_direction2 = \
-                        refract_block.interact_lazor(current_position, current_direction, 0)
+                        refract_block.interact_lazor(
+                            current_position, current_direction, 0)
                     # Append the next lazor positions and directions to their lists.
                     lazor_path.append(next_position1)
                     lazor_direction.append(next_direction1)
@@ -1075,7 +1107,8 @@ def lazor(num_grid, laz_dict, targets):
                     # Treat the refract block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
-                        empty_block.interact_lazor(current_position, current_direction)
+                        empty_block.interact_lazor(
+                            current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
@@ -1084,21 +1117,24 @@ def lazor(num_grid, laz_dict, targets):
             if num_grid[current_position[Y]][current_position[X]] == 31:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
-                lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
+                lazor_grid_dict[laz_grid_key][current_position[Y]
+                                              ][current_position[X]] = 1
                 # Check the next position to identify whether the lazor is inside a refract block or
                 # entering a refract block.
                 # If inside a refract block, the next position will be a 0 and
                 # the lazor should not refract again.
                 # If entering a refract block, the next position will not be a 0 and
                 # the lazor should refract.
-                check_position_x = (current_position[X]+current_direction[X],current_position[Y])
+                check_position_x = (
+                    current_position[X]+current_direction[X], current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
                     num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
                         num_grid[check_position_x[Y]][check_position_x[X]] != 100:
                     # If the lazor is entering a new refract block,
                     # Determine the next position and direction from the refract block class.
                     next_position1, next_direction1, next_position2, next_direction2 = \
-                        refract_block.interact_lazor(current_position, current_direction, 1)
+                        refract_block.interact_lazor(
+                            current_position, current_direction, 1)
                     # Append the next lazor positions and directions to their lists.
                     lazor_path.append(next_position1)
                     lazor_direction.append(next_direction1)
@@ -1109,7 +1145,8 @@ def lazor(num_grid, laz_dict, targets):
                     # Treat the refract block as an open block and determine the next position and
                     # direction from the open block class.
                     next_position, next_direction = \
-                        empty_block.interact_lazor(current_position, current_direction)
+                        empty_block.interact_lazor(
+                            current_position, current_direction)
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
         laz_count += 1
@@ -1125,6 +1162,7 @@ def lazor(num_grid, laz_dict, targets):
     # Return the lazor grid of 0's and 1's, the lazor positions, and the results of
     # if the targets were hit.
     return lazor_grid, lazor_positions, lazor_positions_dict, targets_results
+
 
 def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets):
     '''
@@ -1184,12 +1222,14 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
 
     # Check to see if all blocks are the same for a given puzzle.
     if all(ele == movable_blocks[0] for ele in movable_blocks):
-         # Create all of the possible combinations of positions where blocks can be placed.
-        position_perm = itertools.combinations(possible_pos, num_movable_blocks)
+        # Create all of the possible combinations of positions where blocks can be placed.
+        position_perm = itertools.combinations(
+            possible_pos, num_movable_blocks)
 
     else:
         # Create all of the possible permutations of positions where blocks can be placed.
-        position_perm = itertools.permutations(possible_pos, num_movable_blocks)
+        position_perm = itertools.permutations(
+            possible_pos, num_movable_blocks)
 
     # Create a list from the permutations
     perm_list = list(position_perm)
@@ -1200,7 +1240,7 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
         targets_results = lazor(num_grid, laz_dict, targets)
 
     # Identify any permutations that do not affect the lazor path at all and delete those.
-    neighbor_positions = [(0,1), (0,-1), (1,0), (-1,0)]
+    neighbor_positions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
     lazor_neighbors = []
 
     # Update list of all block space the lazor passes next to.
@@ -1243,7 +1283,7 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
     lazor_positions_dict = {}
     targets_results = []
     # Iterate through and check each option.
-    for option in lazor_perm_list:#lazor_perm_list:
+    for option in lazor_perm_list:  # lazor_perm_list:
 
         # Make a copy of the original grid that can be updated.
         new_grid = copy.deepcopy(num_grid)
@@ -1273,7 +1313,7 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
 
     # Output if no possible solutions can be found.
     if solution_grid == []:
-        print("No Solution Found") 
+        print("No Solution Found")
 
     # Initialize dictionary for the block positions of the solution
     blocks_results_dict = {'space': [],
@@ -1282,11 +1322,11 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
                            'opaque': []}
     block_location_value = 0
 
-    # Iterate through the letter grid to identify block types for each position and place blocks 
+    # Iterate through the letter grid to identify block types for each position and place blocks
     # of the correct type into the number grid as each position is determined.
     for i in range(len(solution_grid)):
         for j in range(len(solution_grid[i])):
-            if i%2 != 0 and j%2 != 0:
+            if i % 2 != 0 and j % 2 != 0:
                 # 100 corresponds to empty blocks.
                 if solution_grid[i][j] == 100:
                     # Adds the value for count in the space key
@@ -1317,6 +1357,8 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
         blocks_results_dict, lazor_positions_dict, targets_results
 
 # Ancillary Functions
+
+
 def pos_chk(position, size):
     '''
     Validate if the coordinates specified (x and y) are within the grid.
@@ -1339,6 +1381,7 @@ def pos_chk(position, size):
     # Return true if the position is within the grid. Return False if it is not.
     return position[0] >= 0 and position[0] < size[0] and position[1] >= 0 and position[1] < size[1]
 
+
 def print_matrix(input_list):
     '''
     This function prints a matrix on row at a time. Makes it easier to read.
@@ -1355,7 +1398,9 @@ def print_matrix(input_list):
     for rows in input_list:
         print(rows)
 
-## Output Visualization Functions
+# Output Visualization Functions
+
+
 def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
     '''
     This function places the blocks in the grid. It places both the spaces for blocks
@@ -1382,7 +1427,8 @@ def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
     # of blocks there are
     box_size = width / (matrix_size_x*2)
     # Calculate the size of the gap between the blocks
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
+    gap_between = (2*width/(matrix_size_x+1)) - \
+        (1*width/(matrix_size_x+1) + box_size)
     # Calculate the size of the block based on the box size and the gap between the boxes
     block_size = box_size + gap_between
     # Initialize the offset for the y axis
@@ -1401,11 +1447,13 @@ def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
                     # is the same as where a block is insert it
                     if count in blocks_dict[key]:
                         # Initialize the x and y location of the top left corner of the block
-                        x_location = ((j+1)*width/(matrix_size_x+1)) - (box_size/2)
-                        y_location = (i+1)*width/(matrix_size_x+1) - (box_size/2) + offset
+                        x_location = (
+                            (j+1)*width/(matrix_size_x+1)) - (box_size/2)
+                        y_location = (i+1)*width/(matrix_size_x +
+                                                  1) - (box_size/2) + offset
                         # Draw the block
-                        canvas.create_rectangle(x_location,y_location,
-                                                x_location+box_size,y_location+box_size,
+                        canvas.create_rectangle(x_location, y_location,
+                                                x_location+box_size, y_location+box_size,
                                                 fill="black")
                     # Iterate count
                     count += 1
@@ -1420,11 +1468,13 @@ def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
                     # is the same as where a block is insert it
                     if count in blocks_dict[key]:
                         # Initialize the x and y location of the top left corner of the block
-                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
-                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
+                        block_x_position = (
+                            (j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
+                        block_y_position = (
+                            i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
                         # Draw the block
-                        canvas.create_rectangle(block_x_position,block_y_position,
-                                                block_x_position+block_size,block_y_position+block_size,
+                        canvas.create_rectangle(block_x_position, block_y_position,
+                                                block_x_position+block_size, block_y_position+block_size,
                                                 fill="tan")
                     # Iterate count
                     count += 1
@@ -1439,11 +1489,13 @@ def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
                     # is the same as where a block is insert it
                     if count in blocks_dict[key]:
                         # Initialize the x and y location of the top left corner of the block
-                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
-                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
+                        block_x_position = (
+                            (j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
+                        block_y_position = (
+                            i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
                         # Draw the block
-                        canvas.create_rectangle(block_x_position,block_y_position,
-                                                block_x_position+block_size,block_y_position+block_size,
+                        canvas.create_rectangle(block_x_position, block_y_position,
+                                                block_x_position+block_size, block_y_position+block_size,
                                                 fill="#EDF7FB")
                     # Iterate the count
                     count += 1
@@ -1458,14 +1510,17 @@ def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
                     # is the same as where a block is insert it
                     if count in blocks_dict[key]:
                         # Initialize the x and y location of the top left corner of the block
-                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
-                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
+                        block_x_position = (
+                            (j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
+                        block_y_position = (
+                            i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
                         # Draw the block
-                        canvas.create_rectangle(block_x_position,block_y_position,
-                                                block_x_position+block_size,block_y_position+block_size,
+                        canvas.create_rectangle(block_x_position, block_y_position,
+                                                block_x_position+block_size, block_y_position+block_size,
                                                 fill="#A66408")
                     # Iterate the count
                     count += 1
+
 
 def place_targets(canvas, coordinates, width, matrix_size_x, diameter):
     '''
@@ -1485,22 +1540,24 @@ def place_targets(canvas, coordinates, width, matrix_size_x, diameter):
             A value for the diameter of the targets
 
     **Returns**
-        
+
     '''
     # Calculate the radius of the circle based on the diameter
-    radius= diameter / 2
-    # Calculate the box size based on the width of the game and the availible number 
+    radius = diameter / 2
+    # Calculate the box size based on the width of the game and the availible number
     # of boxes
     box_size = width / (matrix_size_x*2)
     # Calculate the gap between the boxes
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
+    gap_between = (2*width/(matrix_size_x+1)) - \
+        (1*width/(matrix_size_x+1) + box_size)
     # Calculate the block sized based on box size and the gap between
     block_size = box_size + gap_between
     # Initialize the offset in the y
     offset = 100
     # Initialize the size of both x and y where the target would be
     x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
-    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
+    y_size = (width/(matrix_size_x+1))-(box_size/2) - \
+        (gap_between/2) - radius + offset
 
     # Iterate through each location of the targets
     for coordinate in coordinates:
@@ -1509,11 +1566,12 @@ def place_targets(canvas, coordinates, width, matrix_size_x, diameter):
             start_x_position = x_size + (coordinate[0]*(block_size/2))
             start_y_position = y_size + (coordinate[1]*(block_size/2))
             # Draw the circle
-            canvas.create_oval(start_x_position,start_y_position,
-                                    start_x_position+diameter,start_y_position+diameter,
-                                    fill='grey')
+            canvas.create_oval(start_x_position, start_y_position,
+                               start_x_position+diameter, start_y_position+diameter,
+                               fill='grey')
         except:
             pass
+
 
 def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diameter):
     '''
@@ -1545,26 +1603,28 @@ def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diam
     # there are
     box_size = width / (matrix_size_x*2)
     # Calculate the gap between each box
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
+    gap_between = (2*width/(matrix_size_x+1)) - \
+        (1*width/(matrix_size_x+1) + box_size)
     # Calculate the block size based on the box size and the gap between
     block_size = box_size + gap_between
     # Initialize the offset in the y
     offset = 100
     # Calculate the x and y size for the starting position of the lazor
     x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
-    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
+    y_size = (width/(matrix_size_x+1))-(box_size/2) - \
+        (gap_between/2) - radius + offset
 
     # Loop through each lazor in the dictionary
     for key in laz_dict:
-        # Draw the starting point for each lazor 
+        # Draw the starting point for each lazor
         # Calculate the start position for the lazor
         start_x_position = x_size + (laz_dict[key][0][0]*(block_size/2))
         start_y_position = y_size + (laz_dict[key][0][1]*(block_size/2))
         # Add circle to the canvas
-        canvas.create_oval(start_x_position,start_y_position,
-                                start_x_position+diameter,start_y_position+diameter,
-                                fill='red')
-    
+        canvas.create_oval(start_x_position, start_y_position,
+                           start_x_position+diameter, start_y_position+diameter,
+                           fill='red')
+
     # Iterate through each lazor in the dictionary
     for key in lazor_position_dict:
         print(lazor_position_dict[key])
@@ -1580,11 +1640,12 @@ def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diam
                         # Loop through to find the closest block to this position
                         while lazor_position_dict[key][count][0] != lazor_position_dict[key][i+1][0] or lazor_position_dict[key][count][1] != lazor_position_dict[key][i+1][1]:
                             if (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1] == -1)\
-                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== 1)\
-                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== 1)\
-                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== -1):
+                                    or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1] == 1)\
+                                    or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1] == 1)\
+                                    or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1] == -1):
                                 # Save the value of the block 1 away that is the closest in the list
-                                value = (lazor_position_dict[key][count][0], lazor_position_dict[key][count][1])
+                                value = (
+                                    lazor_position_dict[key][count][0], lazor_position_dict[key][count][1])
                             # Iterate the count
                             count += 1
                         # Replace the value of the position before with this value
@@ -1600,16 +1661,20 @@ def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diam
                     continue
                 else:
                     # Create the start and end positions of the lazor
-                    start_x_position = x_size + (lazor_position_dict[key][i-1][0]*(block_size/2))
-                    start_y_position = y_size + (lazor_position_dict[key][i-1][1]*(block_size/2))
-                    end_x_position = x_size + (coordinate[0]*(block_size/2)) #lazor_position_dict[key][i][0]
+                    start_x_position = x_size + \
+                        (lazor_position_dict[key][i-1][0]*(block_size/2))
+                    start_y_position = y_size + \
+                        (lazor_position_dict[key][i-1][1]*(block_size/2))
+                    # lazor_position_dict[key][i][0]
+                    end_x_position = x_size + (coordinate[0]*(block_size/2))
                     end_y_position = y_size + (coordinate[1]*(block_size/2))
                     # Draw the lazor between the two points
-                    canvas.create_line(start_x_position+radius,start_y_position+radius,
-                                            end_x_position+radius,end_y_position+radius,
-                                            fill='red',width=3)
+                    canvas.create_line(start_x_position+radius, start_y_position+radius,
+                                       end_x_position+radius, end_y_position+radius,
+                                       fill='red', width=3)
             except:
                 pass
+
 
 def display_level(level_title):
     '''
@@ -1640,7 +1705,7 @@ def display_level(level_title):
 
     # Initialize the left side for the initial level
     image_start = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
-    image_start.grid(row=1,column=0)
+    image_start.grid(row=1, column=0)
 
     # Place the initial blocks from the level
     place_blocks(image_start, blocks_dict,
@@ -1653,6 +1718,7 @@ def display_level(level_title):
     # Draw the lazor for the level
     draw_lazor(image_start, laz_dict, lazor_positions_dict,
                WIDTH, MATRIX_SIZE_X, DIAMETER)
+
 
 def display_solution(level_title):
     '''
@@ -1672,10 +1738,11 @@ def display_solution(level_title):
     # Initialize the image on the right for the solution
     image_solution = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
     # Place the image on the screen
-    image_solution.grid(row=1,column=2)
+    image_solution.grid(row=1, column=2)
 
     # Read in the file
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(level_title)
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(
+        level_title)
     # Create intiial grid
     num_grid, possible_pos, blocks_dict = create_grid(grid_list)
     # Solve the puzzle
@@ -1701,16 +1768,18 @@ def display_solution(level_title):
     draw_lazor(image_solution, laz_dict, lazor_positions_dict,
                WIDTH, MATRIX_SIZE_X, DIAMETER)
 
+
 def screenshot_window(level_title):
     level_title = level_title - ".bff"
     print(level_title)
-    filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
+    # filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
     screenshot = pg.screenshot()
-    screenshot.save(filename)
+    screenshot.save("level_title", format="PNG")
     # win.deiconify()
 
+
 if __name__ == '__main__':
-    ## The start of the level
+    # The start of the level
     # Initialize window
     win = Tk()
     win.geometry("800x700")
@@ -1720,31 +1789,32 @@ if __name__ == '__main__':
 
     # Level Selection Text Field
     # Initialize the entry field
-    level_selection_text = Entry(win, width=25, text="Pleaese Enter Level", borderwidth=5)
+    level_selection_text = Entry(
+        win, width=25, text="Pleaese Enter Level", borderwidth=5)
     # Place entry field in the window
     level_selection_text.grid(row=0, column=1)
     # Add default text into entry field
-    level_selection_text.insert(0,".bff")
+    level_selection_text.insert(0, ".bff")
 
     # Initialize image on the left for the level
     image_start = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
-    image_start.grid(row=1,column=0)
+    image_start.grid(row=1, column=0)
 
     # Initialize image on the right for the solution
     image_solution = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
-    image_solution.grid(row=1,column=2)
+    image_solution.grid(row=1, column=2)
 
-    ## Showw Level Button
+    # Showw Level Button
     # Initialize button to display level
     display_level_button = Button(win, text="Display Level",
-                          command=lambda: display_level(level_selection_text.get()))
+                                  command=lambda: display_level(level_selection_text.get()))
     # Place button on the window
     display_level_button.grid(row=0, column=2, padx=10)
 
-    ## Solve Button
+    # Solve Button
     # Initialize button to solve the level
     solve_puzzle_button = Button(win, text="Solve Puzzle",
-                          command=lambda: display_solution(level_selection_text.get()))
+                                 command=lambda: display_solution(level_selection_text.get()))
     # Place button on the window
     solve_puzzle_button.grid(row=1, column=1, padx=50)
 

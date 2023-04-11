@@ -12,100 +12,9 @@ from tkinter import *
 import itertools
 import copy
 
-# Global Variable
+# Global Variables
 X = 0
 Y = 1
-
-def openlazorfile(filename):
-    '''
-    This will open the bff file and output the components on the board.
-
-    **Parameters**
-        file: *str*
-            Name of the file that needs to be opened
-
-    **Returns**
-        A series of lists containing the following:
-            grid_list = list of numbers in the grid
-            refl_block = list of number of reflect blocks
-            opq_block = list of number of opaque blocks
-            refr_block = list of number of refract blocks
-            laz_start = list of lists with the starting position of the lazor
-            target = list of lists with the targets that the lazor needs to hit
-    '''
-
-    grid_list = []
-    refl_block = []
-    opq_block = []
-    refr_block = []
-    num_refl_block = 0
-    num_opq_block = 0
-    num_refr_block = 0
-    laz_data = []
-    laz_count = 0
-    laz_dict = {}
-    target = []
-    targets = []
-    add_grid_to_list = False
-
-    with open(filename, 'r') as file:
-
-        for l in file:
-            # print(l)
-            if l.startswith("#"):
-                continue
-
-            if l.startswith(" "):
-                continue
-
-            elif l.startswith('GRID START'):
-                for grid_line in file:
-                    if grid_line.startswith('GRID STOP'):
-                        break
-                    grid_list.append(
-                        [int(x) if x.isdigit() else x for x in grid_line.strip().split()])
-
-            # print(grid_list)
-            elif l.startswith("A"):
-                refl_block = [int(x) for x in l.strip().split()[1:]]
-                num_refl_block = int(refl_block[0])
-
-            elif l.startswith("B"):
-                opq_block = [int(x) for x in l.strip().split()[1:]]
-                num_opq_block = int(opq_block[0])
-
-            elif l.startswith("C"):
-                refr_block = [int(x) for x in l.strip().split()[1:]]
-                num_refr_block = int(refr_block[0])
-
-            elif l.startswith("L"):
-                laz_data = []
-                laz_data.append(l.split()[1:])
-                lazor_coor = (int(laz_data[0][0]), int(laz_data[0][1]))
-                lazor_dir = (int(laz_data[0][2]), int(laz_data[0][3]))
-                key = f"lazor{laz_count}"
-                laz_dict[key] = [(lazor_coor[0], lazor_coor[1]),
-                                 (lazor_dir[0], lazor_dir[1])]
-                laz_count += 1
-
-            elif l.startswith("P"):
-                target.append(l.split()[1:])
-
-    # converting the output from the loop into a int
-    target = [[int(element) for element in inner_list]
-              for inner_list in target]
-    for i in target:
-        targets.append(tuple(i))
-    # print(grid_list)
-    # print(grid_list[0][0])
-    # print(type(grid_list[0][0]))
-    # print(num_refl_block)
-    # print(num_opq_block)
-    # print(num_refr_block)
-    # print(laz_dict)
-    # # print(type(laz_start[0][0]))
-    # print(targets)
-    return grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets
 
 ## Block Creation
 class Block:
@@ -167,11 +76,14 @@ class Block:
         **Returns**
             N/A
         '''
+        # Initialize the type as empty
         self.type = 'empty'
+        # Initialize the grid with 0's
         self.grid = [
             [0 for i in range(3)]
             for j in range(3)
         ]
+        # Initialize the positions list
         self.positions = []
 
     def get_type(self, position):
@@ -186,8 +98,9 @@ class Block:
             self.type: *str*
                 The type of block that exists at that position
         '''
-
+        # Iterate through the positions
         for i in self.positions:
+            # Returns the type at the positions
             if i == position:
                 return self.type
 
@@ -202,7 +115,7 @@ class Block:
             self.positions: *list* of tuples
                 The positions on the grid that the block object exists at
         '''
-
+        # Return the positions
         return self.positions
 
     def set_position(self, new_position, num_grid):
@@ -221,11 +134,12 @@ class Block:
             num_grid: *list, list*
                 The original grid with the updated values
         '''
-        
+
         # Add the new position to the block's list of positions.
         self.positions.append(new_position)
 
-        # Modify the original grid by adding the block's unique grid of numbers to the position specified.
+        # Modify the original grid by adding the block's 
+        # unique grid of numbers to the position specified.
         grid_edit = self.grid
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
@@ -234,7 +148,7 @@ class Block:
                     num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] == 100:
                     num_grid[new_position[Y]+y_index-1][new_position[X]+x_index-1] = \
                         grid_edit[y_index][x_index]
-        
+
         # Return the new grid with the modified block values.
         return num_grid
 
@@ -260,10 +174,12 @@ class Block:
 
         # Modify the original grid by removing the block's unique grid of numbers from the position specified.
         size = (len(num_grid[0]), len(num_grid))
+        # Initialize the grid as 0's
         grid_edit = [
             [0 for i in range(3)]
             for j in range(3)
         ]
+        # Initialize the middle of the grid as 100
         grid_edit[1][1] = 100
         for y_index in range(len(grid_edit)):
             for x_index in range(len(grid_edit[y_index])):
@@ -450,7 +366,6 @@ class Block:
         # Return the lazor's new position and direction.
         return new_position, new_direction
 
-
 class Open_Block(Block):
     '''
     A class that inherits the Block class
@@ -491,7 +406,6 @@ class Open_Block(Block):
         ]
         open_grid[1][1] = 100
         self.grid = open_grid
-
 
 class Reflect_Block(Block):
     '''
@@ -602,7 +516,6 @@ class Reflect_Block(Block):
         # Return the lazor's new position and direction.
         return new_position, new_direction
 
-
 class Opaque_Block(Block):
     '''
     A class that inherits the Block class
@@ -691,7 +604,6 @@ class Opaque_Block(Block):
         # Return the lazor's new position and direction.
         return new_position, new_direction
 
-
 class Refract_Block(Block):
     '''
     A class that inherits the Block class
@@ -759,6 +671,100 @@ class Refract_Block(Block):
         # Return the lazor's two new positions and directions.
         return new_position_empty, new_direction_empty, new_position_reflect, new_direction_reflect
 
+## Solving Functions
+def openlazorfile(filename):
+    '''
+    This will open the bff file and output the components on the board.
+
+    **Parameters**
+        file: *str*
+            Name of the file that needs to be opened
+
+    **Returns**
+        A series of lists containing the following:
+            grid_list = list of numbers in the grid
+            refl_block = list of number of reflect blocks
+            opq_block = list of number of opaque blocks
+            refr_block = list of number of refract blocks
+            laz_start = list of lists with the starting position of the lazor
+            target = list of lists with the targets that the lazor needs to hit
+    '''
+    # Initialize variables
+    grid_list = []
+    refl_block = []
+    opq_block = []
+    refr_block = []
+    num_refl_block = 0
+    num_opq_block = 0
+    num_refr_block = 0
+    laz_data = []
+    laz_count = 0
+    laz_dict = {}
+    target = []
+    targets = []
+
+    # Open the file
+    with open(filename, 'r') as file:
+        # Iterate through the lines of the file
+        for l in file:
+            # Skip lines that start with #
+            if l.startswith("#"):
+                continue
+            # Skip lines that start with ' '
+            if l.startswith(" "):
+                continue
+            # If line starts with "GRID START" read until line hits
+            # "GRID STOP"
+            elif l.startswith('GRID START'):
+                for grid_line in file:
+                    if grid_line.startswith('GRID STOP'):
+                        break
+                    # Append the line onto the grid
+                    grid_list.append(
+                        [int(x) if x.isdigit() else x for x in grid_line.strip().split()])
+
+            # If the line starts with "A" the counter onto reflect block
+            elif l.startswith("A"):
+                refl_block = [int(x) for x in l.strip().split()[1:]]
+                num_refl_block = int(refl_block[0])
+
+            # If the line starts with "B" the counter onto opaque block
+            elif l.startswith("B"):
+                opq_block = [int(x) for x in l.strip().split()[1:]]
+                num_opq_block = int(opq_block[0])
+
+            # If the line starts with "C" the counter onto refract block
+            elif l.startswith("C"):
+                refr_block = [int(x) for x in l.strip().split()[1:]]
+                num_refr_block = int(refr_block[0])
+
+            # If the line starts with "L" read info about the lazor
+            elif l.startswith("L"):
+                # Initialize the variable
+                laz_data = []
+                # Add the line onto the list
+                laz_data.append(l.split()[1:])
+                # Save the lazor start coordinates
+                lazor_coor = (int(laz_data[0][0]), int(laz_data[0][1]))
+                # Save the lazor start direction
+                lazor_dir = (int(laz_data[0][2]), int(laz_data[0][3]))
+                # Save a dictionary with the lazor information
+                key = f"lazor{laz_count}"
+                laz_dict[key] = [(lazor_coor[0], lazor_coor[1]),
+                                 (lazor_dir[0], lazor_dir[1])]
+                laz_count += 1
+
+            # If the line starts with "P" read info about the targets
+            elif l.startswith("P"):
+                target.append(l.split()[1:])
+
+    # Converting the output from the targets into a int
+    target = [[int(element) for element in inner_list]
+              for inner_list in target]
+    for i in target:
+        targets.append(tuple(i))
+    # Return variables
+    return grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets
 
 def create_grid(grid_list):
     '''
@@ -846,253 +852,6 @@ def create_grid(grid_list):
     # Return the new grid of numbers that was generated and the list of positions that can be manipulated.
     return new_grid, possible_pos, blocks_dict
 
-def create_possible_solutions(num_grid, lazors, targets, num_reflect, num_refract, num_opaque):
-    '''
-    Try solutions to the puzzle until it is solved
-
-    **Parameters**
-        num_grid: *list, list*
-            A matrix holding the starting position for the grid
-        lazors: *dict*
-            Dictionary holding the lazors position and direction
-        targets: *list, tuple*
-            List of x y coordinates for the targets
-        num_reflect: *int*
-            Number of reflect blocks we can add to the puzzle
-        num_refract: *int*
-            Number of reflect blocks we can add to the puzzle
-        num_opaque: *int*
-            Number of reflect blocks we can add to the puzzle
-
-    **Returns**
-        grid_solution: *list, list*
-            The solution to the grid
-    '''
-    lazor0 = lazors['lazor0']
-    lazor0_start = lazor0[0]
-    lazor0_direction = lazor0[1]
-    lazor(num_grid, lazor0_start, lazor0_direction, targets)
-
-## Output visualization
-def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
-    '''
-    This function places the blocks in the grid. It places both the spaces for blocks
-    and the blocks themselves.
-
-    **Parameters**
-
-        canvas: *tkinter object*
-            A canvas object that the blocks will be drawn on
-        blocks_dict: *dict*
-            A dictionary holding the positions of each type of block
-        width: *int*
-            A value for the width of the canvas object
-        matrix_size_x: *int*
-            A value for the number of columns of spaces
-        matrix_size_y: *int*
-            A value for the number of rows of spaces
-
-    **Returns**
-        None
-
-    UPDATE:
-    - Add other colors and ability to place whatever block you want
-    - Make drawing the blocks a function
-        
-    '''
-    box_size = width / (matrix_size_x*2)
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
-    block_size = box_size + gap_between
-    offset = 100
-
-    for key in blocks_dict:
-        if key == 'space':
-            count = 0
-            for i in range(matrix_size_y):
-                for j in range(matrix_size_x):
-                    if count in blocks_dict[key]:
-                        x_location = ((j+1)*width/(matrix_size_x+1)) - (box_size/2)
-                        y_location = (i+1)*width/(matrix_size_x+1) - (box_size/2) + offset
-                        canvas.create_rectangle(x_location,y_location,
-                                                x_location+box_size,y_location+box_size,
-                                                fill="black")
-                    count += 1
-        if key == 'reflect':
-            count = 0
-            for i in range(matrix_size_y):
-                for j in range(matrix_size_x):
-                    if count in blocks_dict[key]:
-                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
-                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
-                        canvas.create_rectangle(block_x_position,block_y_position,
-                                                block_x_position+block_size,block_y_position+block_size,
-                                                fill="tan")
-                    count += 1
-        if key == 'refract':
-            count = 0
-            for i in range(matrix_size_y):
-                for j in range(matrix_size_x):
-                    if count in blocks_dict[key]:
-                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
-                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
-                        canvas.create_rectangle(block_x_position,block_y_position,
-                                                block_x_position+block_size,block_y_position+block_size,
-                                                fill="#EDF7FB")
-                    count += 1
-        if key == 'opaque':
-            count = 0
-            for i in range(matrix_size_y):
-                for j in range(matrix_size_x):
-                    if count in blocks_dict[key]:
-                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
-                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
-                        canvas.create_rectangle(block_x_position,block_y_position,
-                                                block_x_position+block_size,block_y_position+block_size,
-                                                fill="#A66408")
-                    count += 1
-
-def place_start_point(canvas, start, width, matrix_size_x, diameter):
-    '''
-    This function places the start of the lazor in the grid.
-
-    **Parameters**
-
-        canvas: *tkinter object*
-            A canvas object that the blocks will be drawn on
-        start: *tuple*
-            x,y coordinate in the grid where the lazor starts
-        width: *int*
-            A value for the width of the canvas object
-        matrix_size_x: *int*
-            A value for the number of columns of spaces
-       diameter: *int*
-            A value for the diameter of the start lazor
-
-    **Returns**
-        
-    '''
-    radius= diameter / 2
-    box_size = width / (matrix_size_x*2)
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
-    block_size = box_size + gap_between
-    offset = 100
-    x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
-    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
-
-    start_x_position = x_size + (start[0]*(block_size/2))
-    start_y_position = y_size + (start[1]*(block_size/2))
-    canvas.create_oval(start_x_position,start_y_position,
-                             start_x_position+diameter,start_y_position+diameter,
-                             fill='red')
-
-def place_targets(canvas, coordinates, width, matrix_size_x, diameter):
-    '''
-    This function places the targets for the lazor in the grid.
-
-    **Parameters**
-
-        canvas: *tkinter object*
-            A canvas object that the blocks will be drawn on
-        coordinates: *list, tuple*
-            A list of x,y coordinates in the grid where the targets are
-        width: *int*
-            A value for the width of the canvas object
-        matrix_size_x: *int*
-            A value for the number of columns of spaces
-        diameter: *int*
-            A value for the diameter of the targets
-
-    **Returns**
-        
-    '''
-    radius= diameter / 2
-    box_size = width / (matrix_size_x*2)
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
-    block_size = box_size + gap_between
-    offset = 100
-    x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
-    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
-
-    for coordinate in coordinates:
-        try:
-            start_x_position = x_size + (coordinate[0]*(block_size/2))
-            start_y_position = y_size + (coordinate[1]*(block_size/2))
-            canvas.create_oval(start_x_position,start_y_position,
-                                    start_x_position+diameter,start_y_position+diameter,
-                                    fill='grey')
-        except:
-            pass
-
-def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diameter):
-    '''
-    This function draws the lazor in the grid.
-
-    **Parameters**
-
-        canvas: *tkinter object*
-            A canvas object that the blocks will be drawn on
-        coordinates: *list, tuple*
-            A list of x,y coordinates in the grid where the lazor travels
-        width: *int*
-            A value for the width of the canvas object
-        matrix_size_x: *int*
-            A value for the number of columns of spaces
-        diameter: *int*
-            A value for the diameter of the targets
-
-    **Returns**
-    
-    UPDATE:
-    - add dictionary function with more than one lazor
-    '''
-    radius = diameter / 2
-    box_size = width / (matrix_size_x*2)
-    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
-    block_size = box_size + gap_between
-    offset = 100
-    x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
-    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
-
-    for key in laz_dict:
-        
-        start_x_position = x_size + (laz_dict[key][0][0]*(block_size/2))
-        start_y_position = y_size + (laz_dict[key][0][1]*(block_size/2))
-        canvas.create_oval(start_x_position,start_y_position,
-                                start_x_position+diameter,start_y_position+diameter,
-                                fill='red')
-    
-    for key in lazor_position_dict:
-        print(lazor_position_dict[key])
-        for i, coordinate in enumerate(lazor_position_dict[key]):
-            try:
-                if lazor_position_dict[key][i+1][0] - coordinate[0] > 1 or lazor_position_dict[key][i+1][0] - coordinate[0] < -1:
-                    if lazor_position_dict[key][i+1][1] - coordinate[1] > 1 or lazor_position_dict[key][i+1][1] - coordinate[1] < -1:
-                        print(coordinate)
-                        count = 0
-                        while lazor_position_dict[key][count][0] != lazor_position_dict[key][i+1][0] or lazor_position_dict[key][count][1] != lazor_position_dict[key][i+1][1]:
-                            if (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1] == -1)\
-                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== 1)\
-                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== 1)\
-                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== -1):
-                                value = (lazor_position_dict[key][count][0], lazor_position_dict[key][count][1])
-                            count += 1
-
-                        lazor_position_dict[key][count-1] = value
-                        print(lazor_position_dict[key])
-            except:
-                pass
-        for i, coordinate in enumerate(lazor_position_dict[key]):
-            try:
-                start_x_position = x_size + (coordinate[0]*(block_size/2))
-                start_y_position = y_size + (coordinate[1]*(block_size/2))
-                end_x_position = x_size + (lazor_position_dict[key][i+1][0]*(block_size/2))
-                end_y_position = y_size + (lazor_position_dict[key][i+1][1]*(block_size/2))
-                canvas.create_line(start_x_position+radius,start_y_position+radius,
-                                        end_x_position+radius,end_y_position+radius,
-                                        fill='red',width=3)
-            except:
-                pass
-
 def lazor(num_grid, laz_dict, targets):
     '''
     This function takes the grid of the current status of the blocks and tracks the lazor
@@ -1103,10 +862,9 @@ def lazor(num_grid, laz_dict, targets):
         num_grid: *list, list, int*
             A list of lists holding what blocks and targets are in the grid
             This grid will be tested as a solution.
-        lazor_start: *tuple*
-            An x,y coordinate in the grid where the lazor starts
-        lazor_direction: *tuple*
-            Two vectors showing which direction the lazor starts
+        laz_dict: *dict*
+            A dictionary storing the information about the starting position and direction
+            of the lazors in the level
         targets: *list, tuple*
             A list of tuples which includes the coordinates of the targets
 
@@ -1114,8 +872,15 @@ def lazor(num_grid, laz_dict, targets):
         lazor_grid: *list, list, int*
             A list of lists holding the values for the grid
             This grid holds the information where the lazor traveled
+        lazor_positions: *list, tuple*
+            A list of all of the positions the lazor traveled to
+        lazor_positions_dict: *dict*
+            A dictionary containing all of the positions the lazor traveled to
+            separated by lazor
         targets_results: *list, str*
             A list showing if all the targets were hit by the lazor
+
+            lazor_grid, lazor_positions, lazor_positions_dict, targets_results
     '''
 
     # Initialize all block objects for use in manipulating lazor.
@@ -1140,18 +905,23 @@ def lazor(num_grid, laz_dict, targets):
     lazor_positions_dict = {}
     laz_count = 0
 
+    # Loop through each lazor in the dictionary
     for key in laz_dict:
+        # Save the start coordinates and the start direction from the lazor
         lazor_start, lazor_start_direction = laz_dict[key]
 
-        # Initialize the lazor starting point and direction.
+        # Initialize the lazor starting point and direction on the stacks.
         lazor_path = [lazor_start]
         lazor_direction = [lazor_start_direction]
-        
+
+        # Initialize the lazor grid dictionary
         laz_grid_key = f"lazor_grid{laz_count}"
+        # Set lazor grid dictionary to 0's
         lazor_grid_dict[laz_grid_key] = [
             [0 for x in range(size[0])]
             for y in range(size[1])
         ]
+        # Initialize the lazor positions dictionary
         lazor_positions_dict[laz_grid_key] = []
 
         # Indicate the starting point of the lazor has been seen by the lazor.
@@ -1217,6 +987,7 @@ def lazor(num_grid, laz_dict, targets):
                 lazor_grid[current_position[Y]][current_position[X]] = 1
                 lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
 
+                # Check the position in front of the lazors in the x direction for a block
                 check_position_x = (current_position[X]+current_direction[X],current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
                 num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
@@ -1238,6 +1009,7 @@ def lazor(num_grid, laz_dict, targets):
 
             # Opaque block: How to move when the lazor is moving through an opaque block.
             if num_grid[current_position[Y]][current_position[X]] == 20:
+                # Check the position in front of the lazors in the y direction for a block
                 check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
                 num_grid[check_position_y[Y]][check_position_y[X]] != 0 and \
@@ -1255,6 +1027,7 @@ def lazor(num_grid, laz_dict, targets):
                     lazor_direction.append(next_direction)
 
             if num_grid[current_position[Y]][current_position[X]] == 21:
+                # Check the position in front of the lazors in the x direction for a block
                 check_position_x = (current_position[X]+current_direction[X],current_position[Y])
                 if pos_chk((check_position_x[X], check_position_x[Y]), size) and \
                 num_grid[check_position_x[Y]][check_position_x[X]] != 0 and \
@@ -1271,17 +1044,17 @@ def lazor(num_grid, laz_dict, targets):
                     lazor_path.append(next_position)
                     lazor_direction.append(next_direction)
 
-            # Refract Block (top/bottom): How to move when the lazor is moving through a 
+            # Refract Block (top/bottom): How to move when the lazor is moving through a
             # refract block from the top/bottom.
             if num_grid[current_position[Y]][current_position[X]] == 30:
                 # Indicate the lazor has passed through the current position.
                 lazor_grid[current_position[Y]][current_position[X]] = 1
                 lazor_grid_dict[laz_grid_key][current_position[Y]][current_position[X]] = 1
-                # Check the next position to identify whether the lazor is inside a refract block or 
+                # Check the next position to identify whether the lazor is inside a refract block or
                 # entering a refract block.
-                # If inside a refract block, the next position will be a 0 and 
+                # If inside a refract block, the next position will be a 0 and
                 # the lazor should not refract again.
-                # If entering a refract block, the next position will not be a 0 and 
+                # If entering a refract block, the next position will not be a 0 and
                 # the lazor should refract.
                 check_position_y = (current_position[X],current_position[Y]+current_direction[Y])
                 if pos_chk((check_position_y[X], check_position_y[Y]), size) and \
@@ -1352,78 +1125,6 @@ def lazor(num_grid, laz_dict, targets):
     # if the targets were hit.
     return lazor_grid, lazor_positions, lazor_positions_dict, targets_results
 
-
-def pos_chk(position, size):
-    '''
-    Validate if the coordinates specified (x and y) are within the grid.
-
-    **Parameters**
-
-        position: *tuple* (int, int)
-            A tuple of x, y coordinates for a position.
-        size: *tuple* (int, int)
-            How many blocks wide and how many blocks in height the grid is.
-            Should be equivalent to the length of the grid and its row-lists. 
-            (ie. (len(grid[0]), len(grid))).
-
-    **Returns**
-
-        valid: *bool*
-            Whether the coordiantes are valid (True) or not (False).
-    '''
-
-    # Return true if the position is within the grid. Return False if it is not.
-    return position[0] >= 0 and position[0] < size[0] and position[1] >= 0 and position[1] < size[1]
-
-
-def display_solution(level_title):
-    '''
-    Draws the lazor pathway that solves the lazor puzzle.
-    '''
-    WIDTH = 300
-    HEIGHT = WIDTH * 2
-
-    image_solution = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
-    image_solution.grid(row=1,column=2)
-
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(level_title)
-    num_grid, possible_pos, blocks_dict = create_grid(grid_list)
-    solution_grid, lazor_grid, lazor_positions,\
-        blocks_results_dict, lazor_positions_dict, targets_results = \
-        solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block,
-                     num_refr_block, laz_dict, targets)
-
-    MATRIX_SIZE_X = len(grid_list[0])
-    MATRIX_SIZE_Y = len(grid_list)
-    DIAMETER = 10
-
-    # space_positions = [0,1,3,5,7,8,10]
-    # block_positions = [3,7]
-    place_blocks(image_solution, blocks_results_dict,
-                 WIDTH, MATRIX_SIZE_X, MATRIX_SIZE_Y)
-
-    # target_coordinates_test = [(2,3)]
-    place_targets(image_solution, targets,
-                  WIDTH, MATRIX_SIZE_X, DIAMETER)
-
-    draw_lazor(image_solution, laz_dict, lazor_positions_dict,
-               WIDTH, MATRIX_SIZE_X, DIAMETER)
-
-def print_matrix(input_list):
-    '''
-    This function prints a matrix on row at a time. Makes it easier to read.
-
-    **Parameters**
-
-        input_list: *list, list*
-            A a list of lists to be printed
-
-    **Returns**
-
-    '''
-    for rows in input_list:
-        print(rows)
-
 def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets):
     '''
     Iterates through all of the possible solution permutations until 
@@ -1439,6 +1140,7 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
         num_opq_block: *int*
             The number of opaque blocks that can be used to solve a puzzle.
         num_refr_block: *int*
+            The number of refract blocks that can be used to solve a puzzle.
         laz_dict: *dict*
             A dictionary of all of the lazors in a puzzle with
             their starting positions and directions as values.
@@ -1457,11 +1159,15 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
         lazor_positions: *list*
             A list of tuples containing the (x, y) coordinates of all of the positions
             that any lazor has passed through.
+        blocks_results_dict: *dict, list*
+            A dictionary containing the information for placement of the different
+            types of blocks
         lazor_positions_dict: *dict*
             A dictionary listing all of the coordinates that each lazor individually
             passes through.
         targets_results: *list*
             A list displaying whether the targets were hit by the lazors.
+
     '''
 
     # Finding the total number of blocks that will define the lenght of set of combinations
@@ -1479,23 +1185,18 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
     if all(ele == movable_blocks[0] for ele in movable_blocks):
          # Create all of the possible combinations of positions where blocks can be placed.
         position_perm = itertools.combinations(possible_pos, num_movable_blocks)
-        
-    else:       
+
+    else:
         # Create all of the possible permutations of positions where blocks can be placed.
         position_perm = itertools.permutations(possible_pos, num_movable_blocks)
-    
+
+    # Create a list from the permutations
     perm_list = list(position_perm)
 
     # Run the lazor through the original grid to check if solved and
     # generate initial lazor path.
-    lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(num_grid, laz_dict, targets)
-    
-    # # If all targets are hit, save the solution and break the code.
-    # if all(targets_results):
-    #     solution_grid = num_grid
-    #     # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
-    #     # with the values for all lasers individually, and the results of the targets and whether they were hit.
-    #     return solution_grid, lazor_grid, lazor_positions, blocks_results_dict, lazor_positions_dict, targets_results
+    lazor_grid, lazor_positions, lazor_positions_dict, \
+        targets_results = lazor(num_grid, laz_dict, targets)
 
     # Identify any permutations that do not affect the lazor path at all and delete those.
     neighbor_positions = [(0,1), (0,-1), (1,0), (-1,0)]
@@ -1524,7 +1225,8 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
     # Iterate through to check each permutation.
     for option in perm_list:
         unique = True
-        # Identify if any positions in the permutation would be adjacent to any spaces that the lazor is passing through.
+        # Identify if any positions in the permutation would be
+        #   adjacent to any spaces that the lazor is passing through.
         for position in option:
             for neighbor in neighbor_set:
                 if position == neighbor:
@@ -1541,18 +1243,18 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
     targets_results = []
     # Iterate through and check each option.
     for option in lazor_perm_list:#lazor_perm_list:
-        
+
         # Make a copy of the original grid that can be updated.
         new_grid = copy.deepcopy(num_grid)
-        
-        # Iterate through all positions in a permutation set and place the blocks.       
+
+        # Iterate through all positions in a permutation set and place the blocks.
         reflect_blk = Reflect_Block()
         opaque_blk = Opaque_Block()
         refract_blk = Refract_Block()
 
         # Iterate through each position in each option to place blocks.
         for pos in range(len(option)):
-
+            # Place block depending on the type
             if movable_blocks[pos] == 1:
                 reflect_blk.set_position(option[pos], new_grid)
             if movable_blocks[pos] == 2:
@@ -1561,7 +1263,8 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
                 refract_blk.set_position(option[pos], new_grid)
 
         # Run the lazor through the solutions attempt.
-        lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(new_grid, laz_dict, targets)
+        lazor_grid, lazor_positions, lazor_positions_dict, \
+            targets_results = lazor(new_grid, laz_dict, targets)
         # If all targets are hit, save the solution and break the code.
         if all(targets_results):
             solution_grid = new_grid
@@ -1571,6 +1274,7 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
     if solution_grid == []:
         print("No Solution Found") 
 
+    # Initialize dictionary for the block positions of the solution
     blocks_results_dict = {'space': [],
                            'reflect': [],
                            'refract': [],
@@ -1604,40 +1308,327 @@ def solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr
                 # Update the block_location_value as each block is iterated through
                 block_location_value += 1
 
-    # Return the solution grid, the grid of lazor values for the solution, the lazor positions dictionary
-    # with the values for all lasers individually, and the results of the targets and whether they were hit.
-    return solution_grid, lazor_grid, lazor_positions, blocks_results_dict, lazor_positions_dict, targets_results
+    # Return the solution grid, the grid of lazor values
+    #   for the solution, the lazor positions dictionary
+    # with the values for all lasers individually, and
+    #   the results of the targets and whether they were hit.
+    return solution_grid, lazor_grid, lazor_positions, \
+        blocks_results_dict, lazor_positions_dict, targets_results
+
+# Ancillary Functions
+def pos_chk(position, size):
+    '''
+    Validate if the coordinates specified (x and y) are within the grid.
+
+    **Parameters**
+
+        position: *tuple* (int, int)
+            A tuple of x, y coordinates for a position.
+        size: *tuple* (int, int)
+            How many blocks wide and how many blocks in height the grid is.
+            Should be equivalent to the length of the grid and its row-lists. 
+            (ie. (len(grid[0]), len(grid))).
+
+    **Returns**
+
+        valid: *bool*
+            Whether the coordiantes are valid (True) or not (False).
+    '''
+
+    # Return true if the position is within the grid. Return False if it is not.
+    return position[0] >= 0 and position[0] < size[0] and position[1] >= 0 and position[1] < size[1]
+
+def print_matrix(input_list):
+    '''
+    This function prints a matrix on row at a time. Makes it easier to read.
+
+    **Parameters**
+
+        input_list: *list, list*
+            A a list of lists to be printed
+
+    **Returns**
+
+    '''
+    # Print rows separately
+    for rows in input_list:
+        print(rows)
+
+## Output Visualization Functions
+def place_blocks(canvas, blocks_dict, width, matrix_size_x, matrix_size_y):
+    '''
+    This function places the blocks in the grid. It places both the spaces for blocks
+    and the blocks themselves.
+
+    **Parameters**
+
+        canvas: *tkinter object*
+            A canvas object that the blocks will be drawn on
+        blocks_dict: *dict*
+            A dictionary holding the positions of each type of block
+        width: *int*
+            A value for the width of the canvas object
+        matrix_size_x: *int*
+            A value for the number of columns of spaces
+        matrix_size_y: *int*
+            A value for the number of rows of spaces
+
+    **Returns**
+        None
+    '''
+
+    # Calculate the size of the box based on the width of the screen as well as how many columns
+    # of blocks there are
+    box_size = width / (matrix_size_x*2)
+    # Calculate the size of the gap between the blocks
+    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
+    # Calculate the size of the block based on the box size and the gap between the boxes
+    block_size = box_size + gap_between
+    # Initialize the offset for the y axis
+    offset = 100
+
+    # Loop through a dictionary that contains the information where each block is
+    for key in blocks_dict:
+        # If the block is an open space
+        if key == 'space':
+            # Initialilize count
+            count = 0
+            # Loop through the available spaces in the game
+            for i in range(matrix_size_y):
+                for j in range(matrix_size_x):
+                    # If the amount of times it has looped through the available spaces
+                    # is the same as where a block is insert it
+                    if count in blocks_dict[key]:
+                        # Initialize the x and y location of the top left corner of the block
+                        x_location = ((j+1)*width/(matrix_size_x+1)) - (box_size/2)
+                        y_location = (i+1)*width/(matrix_size_x+1) - (box_size/2) + offset
+                        # Draw the block
+                        canvas.create_rectangle(x_location,y_location,
+                                                x_location+box_size,y_location+box_size,
+                                                fill="black")
+                    # Iterate count
+                    count += 1
+        # If the block is a reflect block
+        if key == 'reflect':
+            # Initialilize count
+            count = 0
+            # Loop through the available spaces in the game
+            for i in range(matrix_size_y):
+                for j in range(matrix_size_x):
+                    # If the amount of times it has looped through the available spaces
+                    # is the same as where a block is insert it
+                    if count in blocks_dict[key]:
+                        # Initialize the x and y location of the top left corner of the block
+                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
+                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
+                        # Draw the block
+                        canvas.create_rectangle(block_x_position,block_y_position,
+                                                block_x_position+block_size,block_y_position+block_size,
+                                                fill="tan")
+                    # Iterate count
+                    count += 1
+        # If the block is a refract block
+        if key == 'refract':
+            # Initialilize count
+            count = 0
+            # Loop through the available spaces in the game
+            for i in range(matrix_size_y):
+                for j in range(matrix_size_x):
+                    # If the amount of times it has looped through the available spaces
+                    # is the same as where a block is insert it
+                    if count in blocks_dict[key]:
+                        # Initialize the x and y location of the top left corner of the block
+                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
+                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
+                        # Draw the block
+                        canvas.create_rectangle(block_x_position,block_y_position,
+                                                block_x_position+block_size,block_y_position+block_size,
+                                                fill="#EDF7FB")
+                    # Iterate the count
+                    count += 1
+        # If the block is an opaque block
+        if key == 'opaque':
+            # Initialize the count
+            count = 0
+            # Loop through the available spaces in the game
+            for i in range(matrix_size_y):
+                for j in range(matrix_size_x):
+                    # If the amount of times it has looped through the available spaces
+                    # is the same as where a block is insert it
+                    if count in blocks_dict[key]:
+                        # Initialize the x and y location of the top left corner of the block
+                        block_x_position = ((j+1)*width/(matrix_size_x+1))-(box_size/2)-(gap_between/2)
+                        block_y_position = (i+1)*width/(matrix_size_x+1)-(box_size/2)-(gap_between/2)+offset
+                        # Draw the block
+                        canvas.create_rectangle(block_x_position,block_y_position,
+                                                block_x_position+block_size,block_y_position+block_size,
+                                                fill="#A66408")
+                    # Iterate the count
+                    count += 1
+
+def place_targets(canvas, coordinates, width, matrix_size_x, diameter):
+    '''
+    This function places the targets for the lazor in the grid.
+
+    **Parameters**
+
+        canvas: *tkinter object*
+            A canvas object that the blocks will be drawn on
+        coordinates: *list, tuple*
+            A list of x,y coordinates in the grid where the targets are
+        width: *int*
+            A value for the width of the canvas object
+        matrix_size_x: *int*
+            A value for the number of columns of spaces
+        diameter: *int*
+            A value for the diameter of the targets
+
+    **Returns**
+        
+    '''
+    # Calculate the radius of the circle based on the diameter
+    radius= diameter / 2
+    # Calculate the box size based on the width of the game and the availible number 
+    # of boxes
+    box_size = width / (matrix_size_x*2)
+    # Calculate the gap between the boxes
+    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
+    # Calculate the block sized based on box size and the gap between
+    block_size = box_size + gap_between
+    # Initialize the offset in the y
+    offset = 100
+    # Initialize the size of both x and y where the target would be
+    x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
+    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
+
+    # Iterate through each location of the targets
+    for coordinate in coordinates:
+        try:
+            # Initialize the starting position for the x and y
+            start_x_position = x_size + (coordinate[0]*(block_size/2))
+            start_y_position = y_size + (coordinate[1]*(block_size/2))
+            # Draw the circle
+            canvas.create_oval(start_x_position,start_y_position,
+                                    start_x_position+diameter,start_y_position+diameter,
+                                    fill='grey')
+        except:
+            pass
+
+def draw_lazor(canvas, laz_dict, lazor_position_dict, width, matrix_size_x, diameter):
+    '''
+    This function draws the lazor in the grid.
+
+    **Parameters**
+        UPDATE
+        canvas: *tkinter object*
+            A canvas object that the blocks will be drawn on
+        laz_dict: *dict*
+            A dictionary containing the intialize position and direction
+            of the lazors
+        laz_position_dict: *dict*
+            A dictionary containing the positions of where the 
+            lazor traveled for all the lazors through the level
+        width: *int*
+            A value for the width of the canvas object
+        matrix_size_x: *int*
+            A value for the number of columns of spaces
+        diameter: *int*
+            A value for the diameter of the targets
+
+    **Returns**
+        None
+    '''
+    # Calculate the radius based on the diameter
+    radius = diameter / 2
+    # Calculate the box size based on the width and how many blocks in the x
+    # there are
+    box_size = width / (matrix_size_x*2)
+    # Calculate the gap between each box
+    gap_between = (2*width/(matrix_size_x+1)) - (1*width/(matrix_size_x+1) + box_size)
+    # Calculate the block size based on the box size and the gap between
+    block_size = box_size + gap_between
+    # Initialize the offset in the y
+    offset = 100
+    # Calculate the x and y size for the starting position of the lazor
+    x_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius
+    y_size = (width/(matrix_size_x+1))-(box_size/2)-(gap_between/2) - radius + offset
+
+    # Loop through each lazor in the dictionary
+    for key in laz_dict:
+        # Draw the starting point for each lazor 
+        # Calculate the start position for the lazor
+        start_x_position = x_size + (laz_dict[key][0][0]*(block_size/2))
+        start_y_position = y_size + (laz_dict[key][0][1]*(block_size/2))
+        # Add circle to the canvas
+        canvas.create_oval(start_x_position,start_y_position,
+                                start_x_position+diameter,start_y_position+diameter,
+                                fill='red')
+    
+    # Iterate through each lazor in the dictionary
+    for key in lazor_position_dict:
+        print(lazor_position_dict[key])
+        # Loop through each coordinate the lazor traveled to
+        for i, coordinate in enumerate(lazor_position_dict[key]):
+            try:
+                # Check if the position before the block is more than one block away
+                if lazor_position_dict[key][i+1][0] - coordinate[0] > 1 or lazor_position_dict[key][i+1][0] - coordinate[0] < -1:
+                    if lazor_position_dict[key][i+1][1] - coordinate[1] > 1 or lazor_position_dict[key][i+1][1] - coordinate[1] < -1:
+                        print(coordinate)
+                        # Initialize the count
+                        count = 0
+                        # Loop through to find the closest block to this position
+                        while lazor_position_dict[key][count][0] != lazor_position_dict[key][i+1][0] or lazor_position_dict[key][count][1] != lazor_position_dict[key][i+1][1]:
+                            if (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1] == -1)\
+                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== 1)\
+                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == -1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== 1)\
+                                or (lazor_position_dict[key][i+1][0] - lazor_position_dict[key][count][0] == 1 and lazor_position_dict[key][i+1][1] - lazor_position_dict[key][count][1]== -1):
+                                # Save the value of the block 1 away that is the closest in the list
+                                value = (lazor_position_dict[key][count][0], lazor_position_dict[key][count][1])
+                            # Iterate the count
+                            count += 1
+                        # Replace the value of the position before with this value
+                        lazor_position_dict[key][count-1] = value
+                        print(lazor_position_dict[key])
+            except:
+                pass
+        # Loop through all the coordinates in the position list
+        # for i, coordinate in enumerate(lazor_position_dict[key]):
+            try:
+                # Make sure doesn't index backwards
+                if i-1 < 0:
+                    continue
+                else:
+                    # Create the start and end positions of the lazor
+                    start_x_position = x_size + (lazor_position_dict[key][i-1][0]*(block_size/2))
+                    start_y_position = y_size + (lazor_position_dict[key][i-1][1]*(block_size/2))
+                    end_x_position = x_size + (coordinate[0]*(block_size/2)) #lazor_position_dict[key][i][0]
+                    end_y_position = y_size + (coordinate[1]*(block_size/2))
+                    # Draw the lazor between the two points
+                    canvas.create_line(start_x_position+radius,start_y_position+radius,
+                                            end_x_position+radius,end_y_position+radius,
+                                            fill='red',width=3)
+            except:
+                pass
 
 def display_level(level_title):
     '''
-    Iterates through all of the possible solution permutations until 
-    one passes through all targets to solve the puzzle.
+    Reads in a file and displays the inital state of the level
 
     **Parameters** 
         level_title: *str*
             The name of the level you want to play.
 
     **Returns**
-        solution_grid: *list, list*
-            A list of lists holding the values for the grid that successfully 
-            solved the puzzle including the values for all of the blocks.
-        lazor_grid: *list, list*
-            A list of lists holding the values for the lazor grid that successfully
-            solved the puzzle including 1s for locations the lazor passed through and
-            0s for locations that it did not.
-        lazor_positions: *list*
-            A list of tuples containing the (x, y) coordinates of all of the positions
-            that any lazor has passed through.
-        lazor_positions_dict: *dict*
-            A dictionary listing all of the coordinates that each lazor individually
-            passes through.
-        targets_results: *list*
-            A list displaying whether the targets were hit by the lazors.
+        None
     '''
-
-    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(level_title)
+    # Open the file using the title of the level
+    grid_list, num_refl_block, num_opq_block, num_refr_block, \
+        laz_dict, targets = openlazorfile(level_title)
+    # Create initial grid of the level
     num_grid, possible_pos, blocks_dict = create_grid(grid_list)
-    lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(num_grid, laz_dict, targets)
+    # Track lazor through initial level
+    lazor_grid, lazor_positions, lazor_positions_dict, \
+        targets_results = lazor(num_grid, laz_dict, targets)
 
     WIDTH = 300
     HEIGHT = WIDTH * 2
@@ -1646,201 +1637,107 @@ def display_level(level_title):
     MATRIX_SIZE_Y = len(grid_list)
     DIAMETER = 10
 
+    # Initialize the left side for the initial level
     image_start = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
     image_start.grid(row=1,column=0)
 
+    # Place the initial blocks from the level
     place_blocks(image_start, blocks_dict,
                  WIDTH, MATRIX_SIZE_X, MATRIX_SIZE_Y)
 
+    # Place the targets from the level
     place_targets(image_start, targets,
                   WIDTH, MATRIX_SIZE_X, DIAMETER)
 
+    # Draw the lazor for the level
     draw_lazor(image_start, laz_dict, lazor_positions_dict,
                WIDTH, MATRIX_SIZE_X, DIAMETER)
-    
-    hi = "hi"
-    return hi
+
+def display_solution(level_title):
+    '''
+    Reads in a file and displays the solved state of the level
+
+    **Parameters** 
+        level_title: *str*
+            The name of the level you want to play.
+
+    **Returns**
+        None
+    '''
+    # Set width and height of the game
+    WIDTH = 300
+    HEIGHT = WIDTH * 2
+
+    # Initialize the image on the right for the solution
+    image_solution = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
+    # Place the image on the screen
+    image_solution.grid(row=1,column=2)
+
+    # Read in the file
+    grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile(level_title)
+    # Create intiial grid
+    num_grid, possible_pos, blocks_dict = create_grid(grid_list)
+    # Solve the puzzle
+    solution_grid, lazor_grid, lazor_positions,\
+        blocks_results_dict, lazor_positions_dict, targets_results = \
+        solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block,
+                     num_refr_block, laz_dict, targets)
+
+    # Initialize the size of the grid for the image
+    MATRIX_SIZE_X = len(grid_list[0])
+    MATRIX_SIZE_Y = len(grid_list)
+    DIAMETER = 10
+
+    # Place the blocks on the image
+    place_blocks(image_solution, blocks_results_dict,
+                 WIDTH, MATRIX_SIZE_X, MATRIX_SIZE_Y)
+
+    # Place the targets on the image
+    place_targets(image_solution, targets,
+                  WIDTH, MATRIX_SIZE_X, DIAMETER)
+
+    # Draw the path of the lazor
+    draw_lazor(image_solution, laz_dict, lazor_positions_dict,
+               WIDTH, MATRIX_SIZE_X, DIAMETER)
 
 if __name__ == '__main__':
-    # Reflect block = 1
-    # Opaque block = 2
-    # Left, Right = X0
-    # Top, Bottom = X1
-    # grid = 0 ,0   ,0   ,10  ,0   ,0  ,0
-    #        0 ,100 ,11  ,1   ,11  ,100,0
-    #        0 ,0   ,0   ,10  ,0   ,10 ,0
-    #        0 ,100 ,0   ,100 ,11  ,1  ,11
-    #        0 ,0   ,0   ,0   ,0   ,10 ,0
-    #        0 ,100 ,0   ,100 ,0   ,100,0
-    #        0 ,0   ,0   ,0   ,0   ,0  ,0
-    
-    # grid_test = [
-    #     [0 for i in range(7)]
-    #     for j in range(7)
-    # ]
-
-    # grid_test[1][1] = 100
-    # grid_test[1][5] = 100
-    # grid_test[3][1] = 100
-    # grid_test[3][3] = 100
-    # grid_test[5][1] = 100
-    # grid_test[5][3] = 100
-    # grid_test[5][5] = 100
-    
-    # grid_test[0][3] = 30
-    # grid_test[1][2] = 31
-    # grid_test[1][3] = 3
-    # grid_test[1][4] = 31
-    # grid_test[2][3] = 30
-    
-    # grid_test[2][5] = 30
-    # grid_test[3][4] = 31
-    # grid_test[3][5] = 3
-    # grid_test[3][6] = 31
-    # grid_test[4][5] = 30
-
-    # # #print_matrix(grid_test)
-
-    # start_test = (1,6)
-    # direction_test = (1,-1)
-    # targets_test = [(2,3),(1,4)]
-
-    # laz_dict_test = {'lazor0':[(1,6),(1,-1)]}
-
-    # lazor_grid, lazor_positions, lazor_positions_dict, targets_results = lazor(grid_test, laz_dict_test, targets_test)
-
-    # blocks_dict_test = {'space': [0,1,2,3,4,5,6,7,8],
-    #                     'reflect': [],
-    #                     'refract': [1,5],
-    #                     'opaque': []}
-
-    # win = Tk()
-    # win.geometry("800x700")
-    # WIDTH_TEST = 300
-    # HEIGHT_TEST = WIDTH_TEST * 2
-    # MATRIX_SIZE_X_TEST = 3
-    # MATRIX_SIZE_Y_TEST = 3
-    # DIAMETER_TEST = 10
-    
-    # image_start = Canvas(win, width=WIDTH_TEST, bg="grey")
-    # image_start.grid(row=0,column=0)
-    
-    # place_blocks(image_start, blocks_dict_test,
-    #              WIDTH_TEST, MATRIX_SIZE_X_TEST, MATRIX_SIZE_Y_TEST)
-    
-    # draw_lazor(image_start, laz_dict_test, lazor_positions_dict,
-    #            WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
-
-    # win.mainloop()
-
     ## The start of the level
+    # Initialize window
     win = Tk()
     win.geometry("800x700")
+    # Set width and height of the game
     WIDTH = 300
     HEIGHT = WIDTH * 2
 
     # Level Selection Text Field
+    # Initialize the entry field
     level_selection_text = Entry(win, width=25, text="Pleaese Enter Level", borderwidth=5)
+    # Place entry field in the window
     level_selection_text.grid(row=0, column=1)
+    # Add default text into entry field
     level_selection_text.insert(0,".bff")
 
+    # Initialize image on the left for the level
     image_start = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
     image_start.grid(row=1,column=0)
 
+    # Initialize image on the right for the solution
     image_solution = Canvas(win, width=WIDTH, height=HEIGHT, bg="grey")
     image_solution.grid(row=1,column=2)
 
     ## Showw Level Button
+    # Initialize button to display level
     display_level_button = Button(win, text="Display Level",
                           command=lambda: display_level(level_selection_text.get()))
+    # Place button on the window
     display_level_button.grid(row=0, column=2, padx=10)
 
     ## Solve Button
+    # Initialize button to solve the level
     solve_puzzle_button = Button(win, text="Solve Puzzle",
                           command=lambda: display_solution(level_selection_text.get()))
+    # Place button on the window
     solve_puzzle_button.grid(row=1, column=1, padx=50)
 
+    # Show the window
     win.mainloop()
-
-    # WIDTH_TEST = 300
-    # HEIGHT_TEST = WIDTH_TEST * 2
-
-    # MATRIX_SIZE_X_TEST = 3
-    # MATRIX_SIZE_Y_TEST = 4
-    # DIAMETER_TEST = 10
-
-    # image_start = Canvas(win, width=WIDTH_TEST, height=HEIGHT_TEST, bg="grey")
-    # image_start.grid(row=1,column=0)
-
-    # ## Solve Button
-    # solve_puzzle_button = Button(win, text="Solve Puzzle",
-    #                       command=lambda: display_solution(blocks_dict_test,
-    #                                                    start_test,targets_test,lazor_positions_test))
-    # solve_puzzle_button.grid(row=1, column=1, padx=50)
-
-    #
-
-    # # Create start of game
-    # space_positions_test = [0,1,2,3,4,5,6,7,8]
-    # block_positions_test = []
-
-    # blocks_dict_test = {'space': [0,1,2,3,4,5,6,7,8,9],
-    #                     'reflect': [],
-    #                     'refract': [3,7],
-    #                     'opaque': []}
-    
-    # print(blocks_dict_test)
-    # blocks_dict_test["space"].append(15)
-    # print(blocks_dict_test)
-
-    # place_blocks(image_start, blocks_dict_test,
-    #              WIDTH_TEST, MATRIX_SIZE_X_TEST, MATRIX_SIZE_Y_TEST)
-
-    # win.mainloop()
-    # place_start_point(image_start, start_test,
-    #                   WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
-
-    # place_targets(image_start, targets_test,
-    #               WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
-
-    # ## Solve puzzle
-    # print(targets_test)
-    # test_laz_dict = {}
-    # test_laz_dict['lazor1'] = [start_test, direction_test]
-    # lazor_grid_results, lazor_positions_test, lazor_positions_test_dict, targets_test_results = \
-    #     lazor(grid_test, test_laz_dict, targets_test)
-    # print(targets_test_results)
-    # print(lazor_positions_test)
-    # print_matrix(lazor_grid_results)
-
-    # draw_lazor(image_start, lazor_positions_test,
-    #            WIDTH_TEST, MATRIX_SIZE_X_TEST, DIAMETER_TEST)
-
-    
-    # block_positions_test = [3,7]
-
-    ## Solve Button
-    # image_button = Button(win, text="Solve Puzzle",
-    #                       command=lambda: display_solution(blocks_dict_test,
-    #                                                    start_test,targets_test,lazor_positions_test))
-    # image_button.grid(row=0, column=1, padx=50)
-
-    # win.mainloop()
-
-    ### Correct Solution try
-    # grid_list, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets = openlazorfile('mad_4.bff')
-    # print(len(grid_list))
-    # print(len(grid_list[0]))
-    # num_grid, possible_pos = create_grid(grid_list)
-    # print("created grid")
-    # solution_grid, lazor_grid, lazor_positions, lazor_positions_dict, targets_results = solve_puzzle(num_grid, possible_pos, num_refl_block, num_opq_block, num_refr_block, laz_dict, targets)
-    # print("\n")
-    # print("Start of Mitch testing")
-    # print(targets)
-    # print(laz_dict)
-    # print_matrix(solution_grid)
-    # print("\n")
-    # print_matrix(lazor_grid)
-    # print(targets_results)
-    # print(lazor_positions)
-    # print(lazor_positions_dict)

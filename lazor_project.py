@@ -13,6 +13,8 @@ import itertools
 import copy
 import pyautogui as pg
 from PIL import Image
+from PIL import ImageGrab
+import time
 import os
 
 # Global Variables
@@ -1770,6 +1772,7 @@ def display_solution(level_title):
                WIDTH, MATRIX_SIZE_X, DIAMETER)
 
     # Save the solution to a .PNG file.
+    time.sleep(1)
     screenshot_window(level_title)
 
 
@@ -1791,23 +1794,37 @@ def screenshot_window(level_title):
     # print(level_title)
     # filename = "https://github.com/mturley95/Lazor_Project.git/" + level_title + ".png"
 
+    # Attempt #1
     # # Take a screenshot of the current window.
     # screenshot = ImageGrab.grab()
     # # Save the screenshot to the current directory.
     # screenshot.save(base_name + ".png", format="PNG")
 
-    # Get the ID of the active window
-    window_id = os.popen("xdotool getactivewindow").read().strip()
+    # # Attempt #2
+    # # Get the ID of the active window
+    # window_id = os.popen("xdotool getactivewindow").read().strip()
 
-    # Capture a screenshot of the window using scrot
-    os.system(f"scrot -u -o {window_id}.png")
+    # # Capture a screenshot of the window using scrot
+    # os.system(f"scrot -u -o {window_id}.png")
 
-    screenshot = Image.open(f"{window_id}.png")
+    # screenshot = Image.open(f"{window_id}.png")
 
+    # screenshot.save(base_name + ".png", format="PNG")
+
+    # # Delete the temporary file
+    # os.remove(f"{window_id}.png")
+
+    # Attempt #3
+    time.sleep(1)
+    # Get the position and size of the window
+    x = win.winfo_x()
+    y = win.winfo_y()
+    width = win.winfo_width()
+    height = win.winfo_height()
+
+    # Take screenshot
+    screenshot = ImageGrab.grab(bbox=(x, y, x+width, y+height))
     screenshot.save(base_name + ".png", format="PNG")
-
-    # Delete the temporary file
-    os.remove(f"{window_id}.png")
 
     # win.deiconify()
 
